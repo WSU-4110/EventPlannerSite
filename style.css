@@ -1,0 +1,40 @@
+body {
+    font-family: sans-serif;
+    margin: 0; /* Remove default body margin */
+    padding: 0; /* Remove default body padding */
+    background-color: #f4f4f4; /* Light grey background */
+    color: #333; /* Dark grey text */
+  }
+  
+  header {
+    background-color: #333;
+    color: #fff;
+    padding: 1em 0;
+    text-align: center;
+    margin-bottom: 1.5em; /* Add space below header */
+  }
+  
+  main {
+    width: 90%; /* Make main content area narrower on wide screens */
+    max-width: 1200px; /* Limit maximum width */
+    margin: 0 auto; /* Center main content horizontally */
+    padding: 1em;
+  }
+  
+  footer {
+    text-align: center;
+    padding: 1em 0;
+    margin-top: 2em; /* Add space above footer */
+    background-color: #ddd; /* Light grey footer background */
+    border-top: 1px solid #ccc; /* Add a top border to footer */
+    font-size: 0.85em; /* Smaller font size for footer text */
+  }
+  
+  #calendar {
+    background-color: #fff; /* White calendar background */
+    border: 1px solid #ccc;
+    border-radius: 8px; /* Rounded corners for calendar */
+    padding: 15px;
+  }
+  
+  /* You can add more custom styles here later to adjust FullCalendar's appearance further if needed */
