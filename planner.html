@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Planner</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 1em 0;
+            text-align: center;
+        }
+
+        nav {
+            background-color: #ddd;
+            padding: 0.5em 0;
+            text-align: center;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #333;
+            margin: 0 1em;
+            cursor: pointer;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #eee;
+            background-color: #f9f9f9;
+        }
+
+        .section h2 {
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 0.5em;
+            margin-top: 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1em 0;
+            background-color: #333;
+            color: white;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        /* Styles for specific sections (initially hidden) */
+        #create-event-section,
+        #vendor-directory-section,
+        #rsvp-section,
+        #view-events-section {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Event Planner</h1>
+    </header>
+
+    <nav>
+        <a onclick="showSection('create-event-section')">Create Event</a>
+        <a onclick="showSection('vendor-directory-section')">Vendor Directory</a>
+        <a onclick="showSection('rsvp-section')">RSVP</a>
+        <a onclick="showSection('view-events-section')">View Events</a>
+        <a href="./login.html">Logout</a> </nav>
+
+    <div class="container">
+
+        <section id="create-event-section" class="section">
+            <h2>Create Event</h2>
+            <form>
+                <div>
+                    <label for="event-name">Event Name:</label>
+                    <input type="text" id="event-name" name="event-name">
+                </div>
+                <div>
+                    <label for="event-date">Date:</label>
+                    <input type="date" id="event-date" name="event-date">
+                </div>
+                <div>
+                    <label for="event-time">Time:</label>
+                    <input type="time" id="event-time" name="event-time">
+                </div>
+                <div>
+                    <label for="event-location">Location:</label>
+                    <input type="text" id="event-location" name="event-location">
+                </div>
+                <div>
+                    <label for="event-description">Description:</label>
+                    <textarea id="event-description" name="event-description"></textarea>
+                </div>
+                <button type="button" onclick="alert('Event creation logic would go here (requires backend)')">Create Event</button>
+            </form>
+        </section>
+
+        <section id="vendor-directory-section" class="section">
+            <h2>Vendor Directory</h2>
+            <p>Vendor listings will appear here (requires backend data).</p>
+            <button onclick="alert('Search functionality requires backend')">Search Vendors</button>
+        </section>
+
+        <section id="rsvp-section" class="section">
+            <h2>RSVP</h2>
+            <p>List of events to RSVP to (requires backend data).</p>
+            <div>
+                <h3>Event Title 1</h3>
+                <button onclick="alert('RSVP logic requires backend')">RSVP</button>
+            </div>
+            <div>
+                <h3>Event Title 2</h3>
+                <button onclick="alert('RSVP logic requires backend')">RSVP</button>
+            </div>
+        </section>
+
+        <section id="view-events-section" class="section">
+            <h2>View Events</h2>
+            <div id="event-calendar">
+                <h3>Calendar Placeholder</h3>
+                </div>
+            <div id="event-list">
+                <h3>Event List Placeholder</h3>
+                <div class="event-item">Event Title A - Date/Time - Location</div>
+                <div class="event-item">Event Title B - Date/Time - Location</div>
+                </div>
+        </section>
+
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Event Planner</p>
+    </footer>
+
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.container > .section');
+            sections.forEach(section => {
+                section.style.display = 'none';
+            });
+
+            // Show the selected section
+            const sectionToShow = document.getElementById(sectionId);
+            if (sectionToShow) {
+                sectionToShow.style.display = 'block';
+            }
+        }
+
+        // Initially show the "View Events" section or any default section you prefer
+        document.addEventListener('DOMContentLoaded', function() {
+            showSection('view-events-section');
+        });
+    </script>
+
+</body>
+</html>
