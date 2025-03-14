@@ -9,5 +9,7 @@ function showLoginForm() {
     document.getElementById('login-form').style.display = 'block';
 }
 // Script from planner.html
+// Is currently in planner.html
 
 // Initially show the "View Events" section or any default section
+// Is currently in planner.html
