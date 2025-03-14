@@ -10,4 +10,4 @@ function showLoginForm() {
 }
 // Script from planner.html
 
-// Initially show the "View Events" section or any default section you prefer
+// Initially show the "View Events" section or any default section
