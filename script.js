@@ -53,6 +53,32 @@ async function loginUser(email, password) {
      }
 }
 
+async function createNewEvent(eventName, date, time, location, description) {
+    try {
+        if (!auth.currentUser) {
+            alert("You must be logged in to create an event.");
+            return;
+        }
+        const eventsCollection = collection(db, 'events'); // Get a reference to the 'events' collection
+        await addDoc(eventsCollection, { // Add a new document to the collection
+            name: eventName,
+            date: date,
+            time: time,
+            location: location,
+            description: description,
+            organizerId: auth.currentUser.uid, // Associate the event with the logged-in user's ID
+            timestamp: new Date()
+        });
+        console.log("Event created successfully!");
+        alert("Event created successfully!");
+        // Optionally, clear the form fields after successful creation
+        document.querySelector('#create-event-section form').reset();
+    } catch (error) {
+        console.error("Error creating event: ", error);
+        alert("Failed to create event.");
+    }
+}
+
 // Script from login.html
 function showRegisterForm() {
     document.getElementById('login-form').style.display = 'none';

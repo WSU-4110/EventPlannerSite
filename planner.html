@@ -114,7 +114,13 @@
                     <label for="event-description">Description:</label>
                     <textarea id="event-description" name="event-description"></textarea>
                 </div>
-                <button type="button" onclick="alert('Event creation logic would go here (requires backend)')">Create Event</button>
+                <button type="button" onclick="createNewEvent(
+                    document.getElementById('event-name').value,
+                    document.getElementById('event-date').value,
+                    document.getElementById('event-time').value,
+                    document.getElementById('event-location').value,
+                    document.getElementById('event-description').value
+                )">Create Event</button>
             </form>
         </section>
 
