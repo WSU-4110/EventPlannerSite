@@ -80,15 +80,16 @@ async function createNewEvent(eventName, date, time, location, description) {
 }
 
 // Script from login.html
-function showRegisterForm() {
+window.showRegisterForm = function() {
     document.getElementById('login-form').style.display = 'none';
     document.getElementById('register-form').style.display = 'block';
-}
+};
 
-function showLoginForm() {
+window.showLoginForm = function() {
     document.getElementById('register-form').style.display = 'none';
     document.getElementById('login-form').style.display = 'block';
-}
+};
+
 // Script from planner.html
 // Is currently in planner.html
 

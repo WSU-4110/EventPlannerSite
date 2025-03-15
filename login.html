@@ -25,7 +25,7 @@
                 <button type="button" onclick="loginUser(document.getElementById('login-email').value, document.getElementById('login-password').value)">Login</button>
             </div>
             <div class="switch-form">
-                <a href="#" onclick="showRegisterForm()">Don't have an account? Register here.</a>
+                <a href="#" onclick="window.showRegisterForm()">Don't have an account? Register here.</a>
             </div>
         </div>
 
@@ -53,6 +53,7 @@
     </div>
 
     <script src="script.js"></script>
+    <!--
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
@@ -76,5 +77,6 @@
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
       </script>
+      -->
 </body>
 </html>
