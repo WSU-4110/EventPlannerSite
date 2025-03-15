@@ -1,3 +1,8 @@
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { getFirestore, collection, doc, setDoc } from "firebase/firestore";
+
 //firebase config
 const firebaseConfig = {
     apiKey: "AIzaSyB78Zxb1syQWWtf-bPDzGdhClkmBZsKkWM",
