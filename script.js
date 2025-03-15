@@ -19,44 +19,38 @@ const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-function registerUser(email, password, username) {
-    auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-           
-            const user = userCredential.user;
-            console.log("Registration successful:", user);
-            
-            return db.collection('users').doc(user.uid).set({
-                username: username
-            });
-        })
-        .then(() => {
-            window.location.href = './planner.html'; 
-        })
-        .catch((error) => {
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            console.error("Registration error:", errorCode, errorMessage);
-            alert("Registration failed: " + errorMessage);
-            
+async function registerUser(email, password, username) {
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        console.log("Registration successful:", user);
+        // Optionally, store the username in Firestore
+        await setDoc(doc(db, 'users', user.uid), {
+            username: username
         });
+        window.location.href = './planner.html'; // Redirect to the planner page
+    } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.error("Registration error:", errorCode, errorMessage);
+        alert("Registration failed: " + errorMessage);
+        // Handle errors (e.g., display error message to the user)
+    }
 }
 
-function loginUser(email, password) {
-    auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            
-            const user = userCredential.user;
-            console.log("Login successful:", user);
-            window.location.href = './planner.html'; 
-        })
-        .catch((error) => {
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            console.error("Login error:", errorCode, errorMessage);
-            alert("Login failed: " + errorMessage);
-            
-        });
+async function loginUser(email, password) {
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        console.log("Login successful:", user);
+        window.location.href = './planner.html'; // Redirect to the planner page
+    } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.error("Login error:", errorCode, errorMessage);
+        alert("Login failed: " + errorMessage);
+        // Handle errors (e.g., display error message to the user)
+     }
 }
 
 // Script from login.html
