@@ -22,7 +22,7 @@
                 <input type="password" id="login-password" name="login-password">
             </div>
             <div class="form-group">
-                <button type="button" onclick="window.location.href='./planner.html'">Login</button>
+                <button type="button" onclick="loginUser(document.getElementById('login-email').value, document.getElementById('login-password').value)">Login</button>
             </div>
             <div class="switch-form">
                 <a href="#" onclick="showRegisterForm()">Don't have an account? Register here.</a>
@@ -44,7 +44,7 @@
                 <input type="password" id="register-password" name="register-password">
             </div>
             <div class="form-group">
-                <button type="button" onclick="window.location.href='./planner.html'">Register</button>
+                <button type="button" onclick="registerUser(document.getElementById('register-email').value, document.getElementById('register-password').value, document.getElementById('register-username').value)">Register</button>
             </div>
             <div class="switch-form">
                 <a href="#" onclick="showLoginForm()">Already have an account? Login here.</a>
