@@ -19,7 +19,7 @@ const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-async function registerUser(email, password, username) {
+window.registerUser = async function(email, password, username) {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
@@ -36,9 +36,9 @@ async function registerUser(email, password, username) {
         alert("Registration failed: " + errorMessage);
         // Handle errors (e.g., display error message to the user)
     }
-}
+};
 
-async function loginUser(email, password) {
+window.loginUser = async function(email, password) {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
@@ -50,7 +50,7 @@ async function loginUser(email, password) {
         console.error("Login error:", errorCode, errorMessage);
         alert("Login failed: " + errorMessage);
      }
-}
+};
 
 async function createNewEvent(eventName, date, time, location, description) {
     try {
