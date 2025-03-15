@@ -52,7 +52,8 @@ window.loginUser = async function(email, password) {
      }
 };
 
-async function createNewEvent(eventName, date, time, location, description) {
+// Make createNewEvent globally accessible
+window.createNewEvent = async function(eventName, date, time, location, description) {
     try {
         if (!auth.currentUser) {
             alert("You must be logged in to create an event.");
@@ -76,7 +77,7 @@ async function createNewEvent(eventName, date, time, location, description) {
         console.error("Error creating event: ", error);
         alert("Failed to create event.");
     }
-}
+};
 
 // Make these functions globally accessible
 window.showRegisterForm = function() {
