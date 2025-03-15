@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { getFirestore, collection, doc, setDoc } from "firebase/firestore";
+import { getFirestore, collection, doc, setDoc, addDoc } from "firebase/firestore";
 
 //firebase config
 const firebaseConfig = {
@@ -49,7 +49,6 @@ async function loginUser(email, password) {
         const errorMessage = error.message;
         console.error("Login error:", errorCode, errorMessage);
         alert("Login failed: " + errorMessage);
-        // Handle errors (e.g., display error message to the user)
      }
 }
 
@@ -79,7 +78,7 @@ async function createNewEvent(eventName, date, time, location, description) {
     }
 }
 
-// Script from login.html
+// Make these functions globally accessible
 window.showRegisterForm = function() {
     document.getElementById('login-form').style.display = 'none';
     document.getElementById('register-form').style.display = 'block';
@@ -90,8 +89,4 @@ window.showLoginForm = function() {
     document.getElementById('login-form').style.display = 'block';
 };
 
-// Script from planner.html
-// Is currently in planner.html
 
-// Initially show the "View Events" section or any default section
-// Is currently in planner.html
