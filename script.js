@@ -12,6 +12,46 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
+function registerUser(email, password, username) {
+    auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+           
+            const user = userCredential.user;
+            console.log("Registration successful:", user);
+            
+            return db.collection('users').doc(user.uid).set({
+                username: username
+            });
+        })
+        .then(() => {
+            window.location.href = './planner.html'; 
+        })
+        .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.error("Registration error:", errorCode, errorMessage);
+            alert("Registration failed: " + errorMessage);
+            
+        });
+}
+
+function loginUser(email, password) {
+    auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            
+            const user = userCredential.user;
+            console.log("Login successful:", user);
+            window.location.href = './planner.html'; 
+        })
+        .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.error("Login error:", errorCode, errorMessage);
+            alert("Login failed: " + errorMessage);
+            
+        });
+}
+
 // Script from login.html
 function showRegisterForm() {
     document.getElementById('login-form').style.display = 'none';
