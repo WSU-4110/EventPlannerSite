@@ -89,29 +89,45 @@ window.createNewEvent = async function(eventName, date, time, location, descript
 window.loadEvents = async function() {
     const eventsListDiv = document.getElementById('event-list');
     if (!eventsListDiv) return;
-    eventsListDiv.innerHTML = 'Loading all events...';
+    eventsListDiv.innerHTML = 'Loading events...';
 
     try {
+        if (!auth.currentUser) {
+            eventsListDiv.innerHTML = '<p>Please log in to view events.</p>';
+            return;
+        }
+
         const eventsCollection = collection(db, 'events');
-        const querySnapshot = await getDocs(eventsCollection); // Fetch all documents
+        const querySnapshot = await getDocs(eventsCollection);
+
+        const currentUser = auth.currentUser;
+        const currentUserEmail = currentUser ? currentUser.email : null;
 
         let eventsHTML = '';
         querySnapshot.forEach((doc) => {
             const eventData = doc.data();
-            eventsHTML += `
-                <div class="event-item">
-                    <h3>${eventData.name}</h3>
-                    <p>Date: ${eventData.date}</p>
-                    <p>Time: ${eventData.time}</p>
-                    <p>Location: ${eventData.location}</p>
-                    <p>${eventData.description}</p>
-                    <button onclick="alert('RSVP functionality needs implementation for event ID: ${doc.id}')">RSVP</button>
-                </div>
-            `;
+            const eventId = doc.id;
+            const isPublic = eventData.visibility === 'public';
+            const isPrivate = eventData.visibility === 'private';
+            const isOrganizer = currentUser ? eventData.organizerId === currentUser.uid : false;
+            const isInvited = isPrivate && eventData.invitedEmails && currentUserEmail ? eventData.invitedEmails.includes(currentUserEmail) : false;
+
+            if (isPublic || isOrganizer || isInvited) {
+                eventsHTML += `
+                    <div class="event-item">
+                        <h3>${eventData.name}</h3>
+                        <p>Date: ${eventData.date}</p>
+                        <p>Time: ${eventData.time}</p>
+                        <p>Location: ${eventData.location}</p>
+                        <p>${eventData.description}</p>
+                        <button onclick="alert('RSVP functionality needs implementation for event ID: ${eventId}')">RSVP</button>
+                    </div>
+                `;
+            }
         });
 
         if (eventsHTML === '') {
-            eventsListDiv.innerHTML = '<p>No events found.</p>';
+            eventsListDiv.innerHTML = '<p>No events found based on your visibility settings.</p>';
         } else {
             eventsListDiv.innerHTML = eventsHTML;
         }
