@@ -52,7 +52,7 @@ window.loginUser = async function(email, password) {
      }
 };
 
-window.createNewEvent = async function(eventName, date, time, location, description) {
+window.createNewEvent = async function(eventName, date, time, location, description, visibility) {
     try {
         if (!auth.currentUser) {
             alert("You must be logged in to create an event.");
@@ -66,10 +66,11 @@ window.createNewEvent = async function(eventName, date, time, location, descript
             location: location,
             description: description,
             organizerId: auth.currentUser.uid, // Associate the event with the logged-in user's ID
-            timestamp: new Date()
+            timestamp: new Date(),
+            visibility: visibility // Add the visibility field
         });
         console.log("Event created successfully!");
-        alert("Event created successfully!");
+        alert(`Event created successfully! Visibility: ${visibility}`); // Updated success message
         // Optionally, clear the form fields after successful creation
         document.querySelector('#create-event-section form').reset();
     } catch (error) {

@@ -114,12 +114,20 @@
                     <label for="event-description">Description:</label>
                     <textarea id="event-description" name="event-description"></textarea>
                 </div>
+                <div>
+                    <label>Visibility:</label>
+                    <input type="radio" id="public-event" name="event-visibility" value="public" checked>
+                    <label for="public-event">Public</label>
+                    <input type="radio" id="private-event" name="event-visibility" value="private">
+                    <label for="private-event">Private</label>
+                </div>
                 <button type="button" onclick="createNewEvent(
                     document.getElementById('event-name').value,
                     document.getElementById('event-date').value,
                     document.getElementById('event-time').value,
                     document.getElementById('event-location').value,
-                    document.getElementById('event-description').value
+                    document.getElementById('event-description').value,
+                    document.querySelector('input[name=\'event-visibility\']:checked').value
                 )">Create Event</button>
             </form>
         </section>
