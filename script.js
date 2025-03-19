@@ -52,7 +52,6 @@ window.loginUser = async function(email, password) {
      }
 };
 
-// Make createNewEvent globally accessible
 window.createNewEvent = async function(eventName, date, time, location, description) {
     try {
         if (!auth.currentUser) {
@@ -78,6 +77,64 @@ window.createNewEvent = async function(eventName, date, time, location, descript
         alert("Failed to create event.");
     }
 };
+
+window.loadEvents = async function() {
+    const eventsListDiv = document.getElementById('event-list');
+    if (!eventsListDiv) return;
+    eventsListDiv.innerHTML = 'Loading all events...';
+
+    try {
+        const eventsCollection = collection(db, 'events');
+        const querySnapshot = await getDocs(eventsCollection); // Fetch all documents
+
+        let eventsHTML = '';
+        querySnapshot.forEach((doc) => {
+            const eventData = doc.data();
+            eventsHTML += `
+                <div class="event-item">
+                    <h3>${eventData.name}</h3>
+                    <p>Date: ${eventData.date}</p>
+                    <p>Time: ${eventData.time}</p>
+                    <p>Location: ${eventData.location}</p>
+                    <p>${eventData.description}</p>
+                    <button onclick="alert('RSVP functionality needs implementation for event ID: ${doc.id}')">RSVP</button>
+                </div>
+            `;
+        });
+
+        if (eventsHTML === '') {
+            eventsListDiv.innerHTML = '<p>No events found.</p>';
+        } else {
+            eventsListDiv.innerHTML = eventsHTML;
+        }
+
+    } catch (error) {
+        console.error("Error loading events: ", error);
+        eventsListDiv.innerHTML = '<p>Failed to load events.</p>';
+    }
+};
+
+// Call this function when the "View Events" section is shown
+window.showSection = function(sectionId) {
+    const sections = document.querySelectorAll('.container > .section');
+    sections.forEach(section => {
+        section.style.display = 'none';
+    });
+
+    const sectionToShow = document.getElementById(sectionId);
+    if (sectionToShow) {
+        sectionToShow.style.display = 'block';
+    }
+
+    if (sectionId === 'view-events-section') {
+        window.loadEvents(); // Call the globally accessible loadEvents function
+    }
+};
+
+// Initially show the "View Events" section
+document.addEventListener('DOMContentLoaded', function() {
+    window.showSection('view-events-section'); // Call the globally accessible showSection
+});
 
 // Make these functions globally accessible
 window.showRegisterForm = function() {
