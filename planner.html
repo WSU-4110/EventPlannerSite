@@ -116,10 +116,14 @@
                 </div>
                 <div>
                     <label>Visibility:</label>
-                    <input type="radio" id="public-event" name="event-visibility" value="public" checked>
+                    <input type="radio" id="public-event" name="event-visibility" value="public" onchange="toggleInviteField(this.value)" checked>
                     <label for="public-event">Public</label>
-                    <input type="radio" id="private-event" name="event-visibility" value="private">
+                    <input type="radio" id="private-event" name="event-visibility" value="private" onchange="toggleInviteField(this.value)">
                     <label for="private-event">Private</label>
+                </div>
+                <div id="invite-users-field" style="display: none;">
+                    <label for="invited-emails">Invite Users (Email Addresses, comma-separated):</label>
+                    <input type="text" id="invited-emails" name="invited-emails">
                 </div>
                 <button type="button" onclick="createNewEvent(
                     document.getElementById('event-name').value,
@@ -127,7 +131,8 @@
                     document.getElementById('event-time').value,
                     document.getElementById('event-location').value,
                     document.getElementById('event-description').value,
-                    document.querySelector('input[name=\'event-visibility\']:checked').value
+                    document.querySelector('input[name=\'event-visibility\']:checked').value,
+                    document.getElementById('invited-emails').value
                 )">Create Event</button>
             </form>
         </section>
@@ -191,6 +196,18 @@
             showSection('view-events-section');
         });
     </script>
+
+    <script>
+        function toggleInviteField(visibility) {
+            const inviteField = document.getElementById('invite-users-field');
+            if (visibility === 'private') {
+                inviteField.style.display = 'block';
+            } else {
+                inviteField.style.display = 'none';
+            }
+        }
+    </script>
+
 <!--
     <script type="module">
         // Import the functions you need from the SDKs you need

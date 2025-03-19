@@ -52,14 +52,14 @@ window.loginUser = async function(email, password) {
      }
 };
 
-window.createNewEvent = async function(eventName, date, time, location, description, visibility) {
+window.createNewEvent = async function(eventName, date, time, location, description, visibility, invitedEmails) {
     try {
         if (!auth.currentUser) {
             alert("You must be logged in to create an event.");
             return;
         }
         const eventsCollection = collection(db, 'events'); // Get a reference to the 'events' collection
-        await addDoc(eventsCollection, { // Add a new document to the collection
+        const eventData = {
             name: eventName,
             date: date,
             time: time,
@@ -67,8 +67,15 @@ window.createNewEvent = async function(eventName, date, time, location, descript
             description: description,
             organizerId: auth.currentUser.uid, // Associate the event with the logged-in user's ID
             timestamp: new Date(),
-            visibility: visibility // Add the visibility field
-        });
+            visibility: visibility
+        };
+
+        if (visibility === 'private' && invitedEmails) {
+            // For now, let's just store the raw email strings
+            eventData.invitedEmails = invitedEmails.split(',').map(email => email.trim());
+        }
+
+        await addDoc(eventsCollection, eventData);
         console.log("Event created successfully!");
         alert(`Event created successfully! Visibility: ${visibility}`); // Updated success message
         // Optionally, clear the form fields after successful creation
