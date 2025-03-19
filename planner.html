@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Planner</title>
+    <link href="https://cdn.jsdelivr.net/npm/vanilla-calendar-pro/styles/index.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vanilla-calendar-pro/index.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore-compat.js"></script>
@@ -158,14 +160,8 @@
 
         <section id="view-events-section" class="section">
             <h2>View Events</h2>
-            <div id="event-calendar">
-                <h3>Calendar Placeholder</h3>
-                </div>
-            <div id="event-list">
-                <h3>Event List Placeholder</h3>
-                <div class="event-item">Event Title A - Date/Time - Location</div>
-                <div class="event-item">Event Title B - Date/Time - Location</div>
-                </div>
+            <div id="calendar">
+            </div>
         </section>
 
     </div>
@@ -174,8 +170,30 @@
         <p>&copy; 2025 Event Planner</p>
     </footer>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          const { Calendar } = window.VanillaCalendarPro;
+          const calendar = new Calendar('#calendar');
+          calendar.init();
+
+          window.myCalendar = calendar;
+        });
+    </script>
+
+    <script>
+        function toggleInviteField(visibility) {
+            const inviteField = document.getElementById('invite-users-field');
+            if (visibility === 'private') {
+                inviteField.style.display = 'block';
+            } else {
+                inviteField.style.display = 'none';
+            }
+        }
+    </script>
+
     <script src="script.js" type="module"></script>
 
+<!--
     <script>
         function showSection(sectionId) {
             // Hide all sections
@@ -197,18 +215,7 @@
         });
     </script>
 
-    <script>
-        function toggleInviteField(visibility) {
-            const inviteField = document.getElementById('invite-users-field');
-            if (visibility === 'private') {
-                inviteField.style.display = 'block';
-            } else {
-                inviteField.style.display = 'none';
-            }
-        }
-    </script>
 
-<!--
     <script type="module">
         // Import the functions you need from the SDKs you need
         //import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";

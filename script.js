@@ -87,56 +87,39 @@ window.createNewEvent = async function(eventName, date, time, location, descript
 };
 
 window.loadEvents = async function() {
-    const eventsListDiv = document.getElementById('event-list');
-    if (!eventsListDiv) return;
-    eventsListDiv.innerHTML = 'Loading events...';
-
     try {
-        if (!auth.currentUser) {
-            eventsListDiv.innerHTML = '<p>Please log in to view events.</p>';
-            return;
-        }
-
         const eventsCollection = collection(db, 'events');
         const querySnapshot = await getDocs(eventsCollection);
 
-        const currentUser = auth.currentUser;
-        const currentUserEmail = currentUser ? currentUser.email : null;
+        const calendarEvents = [];
 
-        let eventsHTML = '';
         querySnapshot.forEach((doc) => {
             const eventData = doc.data();
-            const eventId = doc.id;
-            const isPublic = eventData.visibility === 'public';
-            const isPrivate = eventData.visibility === 'private';
-            const isOrganizer = currentUser ? eventData.organizerId === currentUser.uid : false;
-            const isInvited = isPrivate && eventData.invitedEmails && currentUserEmail ? eventData.invitedEmails.includes(currentUserEmail) : false;
+            const date = eventData.date;
+            const time = eventData.time;
+            const dateTimeStr = `${date}T${time}`;
+            const eventDate = new Date(dateTimeStr);
 
-            if (isPublic || isOrganizer || isInvited) {
-                eventsHTML += `
-                    <div class="event-item">
-                        <h3>${eventData.name}</h3>
-                        <p>Date: ${eventData.date}</p>
-                        <p>Time: ${eventData.time}</p>
-                        <p>Location: ${eventData.location}</p>
-                        <p>${eventData.description}</p>
-                        <button onclick="alert('RSVP functionality needs implementation for event ID: ${eventId}')">RSVP</button>
-                    </div>
-                `;
-            }
+            calendarEvents.push({
+                date: eventDate,
+                title: eventData.name,
+                description: `${eventData.time} - ${eventData.description}`
+            });
         });
 
-        if (eventsHTML === '') {
-            eventsListDiv.innerHTML = '<p>No events found based on your visibility settings.</p>';
+        // Access the global calendar instance and set the events
+        if (window.myCalendar && window.myCalendar.setEvents) {
+            window.myCalendar.setEvents(calendarEvents);
+            console.log("Events loaded onto the calendar.");
         } else {
-            eventsListDiv.innerHTML = eventsHTML;
+            console.warn("Calendar instance not found or setEvents method is not available.");
         }
 
     } catch (error) {
-        console.error("Error loading events: ", error);
-        eventsListDiv.innerHTML = '<p>Failed to load events.</p>';
+        console.error("Error loading events for calendar: ", error);
     }
 };
+
 
 // Call this function when the "View Events" section is shown
 window.showSection = function(sectionId) {
@@ -157,7 +140,7 @@ window.showSection = function(sectionId) {
 
 // Initially show the "View Events" section
 document.addEventListener('DOMContentLoaded', function() {
-    window.showSection('view-events-section'); // Call the globally accessible showSection
+    window.showSection('view-events-section');
 });
 
 // Make these functions globally accessible
