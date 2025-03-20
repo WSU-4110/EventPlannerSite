@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
 //firebase config
 const firebaseConfig = {
@@ -120,6 +120,45 @@ window.loadEvents = async function() {
     }
 };
 
+window.loadMyEvents = async function() {
+    const myEventsList = document.getElementById('my-events-list');
+    if (!myEventsList) return;
+    myEventsList.innerHTML = 'Loading your events...';
+
+    try {
+        const auth = getAuth();
+        const user = auth.currentUser;
+
+        if (user) {
+            const eventsCollection = collection(db, 'events');
+            const q = query(eventsCollection, where("organizerId", "==", user.uid));
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                let html = '<ul>';
+                querySnapshot.forEach((doc) => {
+                    const eventData = doc.data();
+                    html += `<li>
+                        <strong>${eventData.name}</strong><br>
+                        Date: ${eventData.date}, Time: ${eventData.time}<br>
+                        Location: ${eventData.location || 'Not specified'}<br>
+                        Description: ${eventData.description || 'No description'}
+                    </li>`;
+                });
+                html += '</ul>';
+                myEventsList.innerHTML = html;
+            } else {
+                myEventsList.innerHTML = '<p>You haven\'t created any events yet.</p>';
+            }
+        } else {
+            myEventsList.innerHTML = '<p>You are not logged in.</p>'; // This should ideally not happen if the navigation is protected
+        }
+
+    } catch (error) {
+        console.error("Error loading your events: ", error);
+        myEventsList.innerHTML = '<p>Failed to load your events.</p>';
+    }
+};
 
 // Call this function when the "View Events" section is shown
 window.showSection = function(sectionId) {
@@ -134,7 +173,9 @@ window.showSection = function(sectionId) {
     }
 
     if (sectionId === 'view-events-section') {
-        window.loadEvents(); // Call the globally accessible loadEvents function
+        window.loadEvents(); // Call the function to load all events (for the calendar)
+    } else if (sectionId === 'my-events-section') {
+        window.loadMyEvents(); // Call the function to load the user's created events
     }
 };
 
