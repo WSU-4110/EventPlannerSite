@@ -160,6 +160,40 @@ window.loadMyEvents = async function() {
     }
 };
 
+window.loadAllEventsList = async function() {
+    const viewEventsSection = document.getElementById('view-events-section');
+    if (!viewEventsSection) return;
+    const calendarDiv = document.getElementById('calendar'); // Using the same div for now
+    if (!calendarDiv) return;
+    calendarDiv.innerHTML = 'Loading events...';
+
+    try {
+        const eventsCollection = collection(db, 'events');
+        const querySnapshot = await getDocs(eventsCollection);
+
+        if (!querySnapshot.empty) {
+            let html = '<ul>';
+            querySnapshot.forEach((doc) => {
+                const eventData = doc.data();
+                html += `<li>
+                    <strong>${eventData.name}</strong><br>
+                    Date: ${eventData.date}, Time: ${eventData.time}<br>
+                    Location: ${eventData.location || 'Not specified'}<br>
+                    Description: ${eventData.description || 'No description'}
+                </li>`;
+            });
+            html += '</ul>';
+            calendarDiv.innerHTML = html;
+        } else {
+            calendarDiv.innerHTML = '<p>No events found.</p>';
+        }
+
+    } catch (error) {
+        console.error("Error loading all events: ", error);
+        calendarDiv.innerHTML = '<p>Failed to load events.</p>';
+    }
+};
+
 // Call this function when the "View Events" section is shown
 window.showSection = function(sectionId) {
     const sections = document.querySelectorAll('.container > .section');
@@ -173,7 +207,7 @@ window.showSection = function(sectionId) {
     }
 
     if (sectionId === 'view-events-section') {
-        window.loadEvents(); // Call the function to load all events (for the calendar)
+        window.loadAllEventsList(); // Call the function to load all events as a list
     } else if (sectionId === 'my-events-section') {
         window.loadMyEvents(); // Call the function to load the user's created events
     }
