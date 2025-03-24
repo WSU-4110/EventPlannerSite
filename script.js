@@ -220,6 +220,7 @@ window.rsvpToEvent = async function(eventId) {
 };
 
 // Function to load and display events the user has RSVP'd to
+// Function to load and display events the user has RSVP'd to
 window.loadRsvpEvents = async function() {
     const rsvpEventsList = document.getElementById('rsvp-events-list');
     if (!rsvpEventsList) return;
@@ -231,18 +232,27 @@ window.loadRsvpEvents = async function() {
 
         if (user) {
             const eventsCollection = collection(db, 'events');
-            const q = query(eventsCollection, where("attendees", "array-contains", user.uid)); // Corrected query
-            const querySnapshot = await getDocs(q);
+            const querySnapshot = await getDocs(eventsCollection);
 
-            if (!querySnapshot.empty) {
+            const rsvpEvents = []; // Fixed initialization
+
+            for (const eventDoc of querySnapshot.docs) {
+                const attendeesCollection = collection(db, 'events', eventDoc.id, 'attendees');
+                const attendeeDoc = await getDoc(doc(attendeesCollection, user.uid));
+
+                if (attendeeDoc.exists()) {
+                    rsvpEvents.push({ id: eventDoc.id, ...eventDoc.data() });
+                }
+            }
+
+            if (rsvpEvents.length > 0) {
                 let html = '<ul>';
-                querySnapshot.forEach((doc) => {
-                    const eventData = doc.data();
+                rsvpEvents.forEach(event => {
                     html += `<li>
-                        <strong>${eventData.name}</strong><br>
-                        Date: ${eventData.date}, Time: ${eventData.time}<br>
-                        Location: ${eventData.location || 'Not specified'}<br>
-                        Description: ${eventData.description || 'No description'}
+                        <strong>${event.name}</strong><br>
+                        Date: ${event.date}, Time: ${event.time}<br>
+                        Location: ${event.location || 'Not specified'}<br>
+                        Description: ${event.description || 'No description'}
                     </li>`;
                 });
                 html += '</ul>';
@@ -255,10 +265,11 @@ window.loadRsvpEvents = async function() {
         }
 
     } catch (error) {
-        console.error("Error loading RSVP'd events: ", error);
+        console.error("Error loading RSVP\'d events: ", error);
         rsvpEventsList.innerHTML = '<p>Failed to load RSVP\'d events.</p>';
     }
 };
+
 
 
 // Call this function when the "View Events" section is shown
