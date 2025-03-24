@@ -138,11 +138,13 @@ window.loadMyEvents = async function() {
                 let html = '<ul>';
                 querySnapshot.forEach((doc) => {
                     const eventData = doc.data();
+                    const eventId = doc.id; // Get the document ID for identifying the event
                     html += `<li>
                         <strong>${eventData.name}</strong><br>
                         Date: ${eventData.date}, Time: ${eventData.time}<br>
                         Location: ${eventData.location || 'Not specified'}<br>
                         Description: ${eventData.description || 'No description'}
+                        <button onclick="window.viewAttendees('${eventId}')">View Attendees</button>
                     </li>`;
                 });
                 html += '</ul>';
@@ -150,8 +152,6 @@ window.loadMyEvents = async function() {
             } else {
                 myEventsList.innerHTML = '<p>You haven\'t created any events yet.</p>';
             }
-        } else {
-            myEventsList.innerHTML = '<p>You are not logged in.</p>'; // This should ideally not happen if the navigation is protected
         }
 
     } catch (error) {
