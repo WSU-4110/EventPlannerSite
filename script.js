@@ -219,6 +219,47 @@ window.rsvpToEvent = async function(eventId) {
     }
 };
 
+// Function to load and display events the user has RSVP'd to
+window.loadRsvpEvents = async function() {
+    const rsvpEventsList = document.getElementById('rsvp-events-list');
+    if (!rsvpEventsList) return;
+    rsvpEventsList.innerHTML = 'Loading RSVP\'d events...';
+
+    try {
+        const auth = getAuth();
+        const user = auth.currentUser;
+
+        if (user) {
+            const eventsCollection = collection(db, 'events');
+            const q = query(eventsCollection, where("attendees", "array-contains", user.uid)); // Corrected query
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                let html = '<ul>';
+                querySnapshot.forEach((doc) => {
+                    const eventData = doc.data();
+                    html += `<li>
+                        <strong>${eventData.name}</strong><br>
+                        Date: ${eventData.date}, Time: ${eventData.time}<br>
+                        Location: ${eventData.location || 'Not specified'}<br>
+                        Description: ${eventData.description || 'No description'}
+                    </li>`;
+                });
+                html += '</ul>';
+                rsvpEventsList.innerHTML = html;
+            } else {
+                rsvpEventsList.innerHTML = '<p>You haven\'t RSVP\'d to any events yet.</p>';
+            }
+        } else {
+            rsvpEventsList.innerHTML = '<p>You are not logged in.</p>';
+        }
+
+    } catch (error) {
+        console.error("Error loading RSVP'd events: ", error);
+        rsvpEventsList.innerHTML = '<p>Failed to load RSVP\'d events.</p>';
+    }
+};
+
 
 // Call this function when the "View Events" section is shown
 window.showSection = function(sectionId) {
