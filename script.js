@@ -171,15 +171,20 @@ window.loadAllEventsList = async function() {
         const eventsCollection = collection(db, 'events');
         const querySnapshot = await getDocs(eventsCollection);
 
+        const auth = getAuth();
+        const user = auth.currentUser;
+
         if (!querySnapshot.empty) {
             let html = '<ul>';
             querySnapshot.forEach((doc) => {
                 const eventData = doc.data();
+                const eventId = doc.id;
                 html += `<li>
                     <strong>${eventData.name}</strong><br>
                     Date: ${eventData.date}, Time: ${eventData.time}<br>
                     Location: ${eventData.location || 'Not specified'}<br>
-                    Description: ${eventData.description || 'No description'}
+                    Description: ${eventData.description || 'No description'}<br>
+                    ${user ? `<button onclick="window.rsvpToEvent('${eventId}')">RSVP</button>` : 'Log in to RSVP'}
                 </li>`;
             });
             html += '</ul>';
@@ -194,6 +199,27 @@ window.loadAllEventsList = async function() {
     }
 };
 
+window.rsvpToEvent = async function(eventId) {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (user) {
+        try {
+            const attendeesCollection = collection(db, 'events', eventId, 'attendees');
+            // Add the user's ID as the document ID in the attendees subcollection
+            await setDoc(doc(attendeesCollection, user.uid), {});
+            alert('You have RSVP\'d to this event!'); // Basic feedback for now
+            // You might want to update the button state or refresh the event list here
+        } catch (error) {
+            console.error("Error RSVPing to event: ", error);
+            alert('Failed to RSVP. Please try again.');
+        }
+    } else {
+        alert('You must be logged in to RSVP.'); // This should ideally not happen due to the button condition
+    }
+};
+
+
 // Call this function when the "View Events" section is shown
 window.showSection = function(sectionId) {
     const sections = document.querySelectorAll('.container > .section');
@@ -207,9 +233,11 @@ window.showSection = function(sectionId) {
     }
 
     if (sectionId === 'view-events-section') {
-        window.loadAllEventsList(); // Call the function to load all events as a list
+        window.loadAllEventsList();
     } else if (sectionId === 'my-events-section') {
-        window.loadMyEvents(); // Call the function to load the user's created events
+        window.loadMyEvents();
+    } else if (sectionId === 'rsvp-section') { // Updated condition for the RSVP section
+        window.loadRsvpEvents(); // We'll create this function next
     }
 };
 
