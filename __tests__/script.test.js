@@ -1,4 +1,4 @@
-const { registerUser, loginUser, createNewEvent, loadEvents, loadMyEvents, rsvpToEvent } = require("../script");
+import { registerUser, loginUser, createNewEvent, loadEvents, loadMyEvents, rsvpToEvent } from "../script.js";
 
 jest.mock("firebase/auth", () => ({
     getAuth: jest.fn(() => ({

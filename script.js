@@ -1,6 +1,6 @@
-import { initializeApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { getFirestore, collection, doc, setDoc, addDoc, getDocs, query, where } from "firebase/firestore";
+const { initializeApp } = require("firebase/app");
+const { getAuth } = require("firebase/auth");
+const { getFirestore, collection, doc, setDoc, addDoc, getDocs, query, where } = require("firebase/firestore");
 
 //firebase config
 const firebaseConfig = {
@@ -306,6 +306,16 @@ window.showRegisterForm = function() {
 window.showLoginForm = function() {
     document.getElementById('register-form').style.display = 'none';
     document.getElementById('login-form').style.display = 'block';
+};
+
+module.exports = {
+    registerUser: window.registerUser,
+    loginUser: window.loginUser,
+    createNewEvent: window.createNewEvent,
+    loadEvents: window.loadEvents,
+    loadMyEvents: window.loadMyEvents,
+    rsvpToEvent: window.rsvpToEvent,
+    loadRsvpEvents: window.loadRsvpEvents // Make sure you want to export this one too
 };
 
 

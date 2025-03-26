@@ -9,6 +9,7 @@
   "name": "eventplannersite",
   "version": "1.0.0",
   "main": "script.js",
+  "type": "module",
   "dependencies": {
     "ansi-escapes": "^4.3.2",
     "ansi-regex": "^5.0.1",
