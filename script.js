@@ -1,6 +1,7 @@
-const { initializeApp } = require("firebase/app");
-const { getAuth } = require("firebase/auth");
-const { getFirestore, collection, doc, setDoc, addDoc, getDocs, query, where } = require("firebase/firestore");
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
 //firebase config
 const firebaseConfig = {
@@ -18,24 +19,24 @@ const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-window.registerUser = async function(email, password, username) {
+async function registerUser(email, password, username) {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         console.log("Registration successful:", user);
-        // Optionally, store the username in Firestore
         await setDoc(doc(db, 'users', user.uid), {
             username: username
         });
-        window.location.href = './planner.html'; // Redirect to the planner page
+        window.location.href = './planner.html';
     } catch (error) {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.error("Registration error:", errorCode, errorMessage);
-        alert("Registration failed: " + errorMessage);
-        // Handle errors (e.g., display error message to the user)
+        console.error("Registration error:", error.code, error.message);
+        alert("Registration failed: " + error.message);
     }
-};
+}
+
+window.registerUser = registerUser;
+export { registerUser };
+
 
 window.loginUser = async function(email, password) {
     try {
@@ -306,16 +307,6 @@ window.showRegisterForm = function() {
 window.showLoginForm = function() {
     document.getElementById('register-form').style.display = 'none';
     document.getElementById('login-form').style.display = 'block';
-};
-
-module.exports = {
-    registerUser: window.registerUser,
-    loginUser: window.loginUser,
-    createNewEvent: window.createNewEvent,
-    loadEvents: window.loadEvents,
-    loadMyEvents: window.loadMyEvents,
-    rsvpToEvent: window.rsvpToEvent,
-    loadRsvpEvents: window.loadRsvpEvents // Make sure you want to export this one too
 };
 
 
