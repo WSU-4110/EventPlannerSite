@@ -1,7 +1,7 @@
-it('registers a user and stores username in Firestore', async () => {
-    createUserWithEmailAndPassword.mockResolvedValue({ user: { uid: 'u123' } });
-    doc.mockReturnValue('docRef');
-    await registerUser('test@example.com', 'pass123', 'testuser');
-    expect(setDoc).toHaveBeenCalledWith('docRef', { username: 'testuser' });
+it('logs in a user with correct credentials', async () => {
+    signInWithEmailAndPassword.mockResolvedValue({ user: { uid: 'u456' } });
+    await loginUser('test@example.com', 'pass123');
+    expect(signInWithEmailAndPassword).toHaveBeenCalledWith(expect.anything(), 'test@example.com', 'pass123');
   });
+  
   
