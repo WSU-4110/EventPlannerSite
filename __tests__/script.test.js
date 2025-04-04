@@ -1,7 +1,9 @@
-it('creates a public event without invited users', async () => {
-    addDoc.mockResolvedValue({ id: 'event789' });
-    await createNewEvent('Party', '2025-04-10', '18:00', 'Club', 'Fun night', 'public', '');
-    expect(addDoc).toHaveBeenCalled();
-  });  
+it('fetches events created by the user', async () => {
+    const mockQuerySnapshot = { forEach: fn => fn({ data: () => ({ name: 'Event A' }) }) };
+    getDocs.mockResolvedValue(mockQuerySnapshot);
+    await getUserEvents('user123');
+    expect(getDocs).toHaveBeenCalled();
+  });
+  
   
   
