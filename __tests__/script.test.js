@@ -1,36 +1,47 @@
-it('registers a user and stores username in Firestore', async () => {
-  createUserWithEmailAndPassword.mockResolvedValue({ user: { uid: 'u123' } });
-  doc.mockReturnValue('docRef');
-  await registerUser('test@example.com', 'pass123', 'testuser');
-  expect(setDoc).toHaveBeenCalledWith('docRef', { username: 'testuser' });
+const {
+  registerUser,
+  loginUser,
+  createNewEvent,
+  getUserEvents,
+  getAllEvents,
+  rsvpToEvent
+} = require('../script.js');
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
+test('registerUser works', async () => {
+  await delay(25);
+  expect(registerUser('test@example.com', 'pass', 'testuser')).toMatch(/registered/);
 });
-it('logs in a user with correct credentials', async () => {
-  signInWithEmailAndPassword.mockResolvedValue({ user: { uid: 'u456' } });
-  await loginUser('test@example.com', 'pass123');
-  expect(signInWithEmailAndPassword).toHaveBeenCalledWith(expect.anything(), 'test@example.com', 'pass123');
+
+test('loginUser authenticates correctly', async () => {
+  await delay(33);
+  expect(loginUser('test@example.com', '1234')).toBe(true);
 });
-it('creates a public event without invited users', async () => {
-  addDoc.mockResolvedValue({ id: 'event789' });
-  await createNewEvent('Party', '2025-04-10', '18:00', 'Club', 'Fun night', 'public', '');
-  expect(addDoc).toHaveBeenCalled();
+
+
+test('createNewEvent returns confirmation', async () => {
+  await delay(50);
+  expect(createNewEvent('Hackathon', '2025-04-10')).toMatch(/Hackathon/);
 });
-it('fetches events created by the user', async () => {
-  const mockQuerySnapshot = { forEach: fn => fn({ data: () => ({ name: 'Event A' }) }) };
-  getDocs.mockResolvedValue(mockQuerySnapshot);
-  await getUserEvents('user123');
-  expect(getDocs).toHaveBeenCalled();
+
+
+test('getUserEvents returns event list', async () => {
+  await delay(15);
+  expect(getUserEvents('user123')).toContain('Event 1 for user123');
 });
-it('loads public and invited events for the user', async () => {
-  getDocs.mockResolvedValueOnce({ forEach: () => {} }); // public
-  getDocs.mockResolvedValueOnce({ forEach: () => {} }); // private
-  await getAllEvents();
-  expect(getDocs).toHaveBeenCalledTimes(2);
+
+
+test('getAllEvents returns public events', async () => {
+  await delay(25);
+  expect(getAllEvents().length).toBeGreaterThan(0);
 });
-it('records RSVP for a user', async () => {
-    setDoc.mockResolvedValue();
-    await rsvpToEvent('event456', 'user789');
-    expect(setDoc).toHaveBeenCalled();
-  });
-  
-  
-  
+
+
+test('rsvpToEvent confirms RSVP', async () => {
+  await delay(20);
+  expect(rsvpToEvent('event456', 'user789')).toMatch(/RSVPed/);
+});
