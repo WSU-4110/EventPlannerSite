@@ -26,5 +26,5 @@ This is a web application that allows users to create, manage, and attend events
 
 ## Authors
 
-John Hu - hn1456@wayne.edu
-Jibran Iqbal - hk9822@wayne.edu
+- John Hu - hn1456@wayne.edu
+- Jibran Iqbal - hk9822@wayne.edu
