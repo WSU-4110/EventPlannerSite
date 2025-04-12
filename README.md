@@ -23,3 +23,8 @@ This is a web application that allows users to create, manage, and attend events
 - **Email Notifications:** Automated emails for confirmations and updates.
 - **Social Media Sharing:** Share events across platforms.
 - **Mobile Responsive:** Works across devices and screen sizes.
+
+## Authors
+
+John Hu - hn1456@wayne.edu
+Jibran Iqbal - hk9822@wayne.edu
