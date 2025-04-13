@@ -450,6 +450,42 @@ window.submitFeedback = async function(eventId) {
           feedbackList.innerHTML = '<p>Error loading feedback.</p>';
         }
       };
+
+    // Modify renderEventList to include feedback form and display
+    window.renderEventList = function (eventList, targetElement, user) {
+        let html = '<ul>';
+        eventList.forEach(event => {
+            const shareUrl = encodeURIComponent(window.location.href);
+            const shareText = encodeURIComponent(`${event.name} on ${event.date} at ${event.time} - ${event.description}`);
+        
+            html += `<li>
+            <strong>${event.name}</strong><br>
+            Date: ${event.date}, Time: ${event.time}<br>
+            Location: ${event.location || 'Not specified'}<br>
+            Description: ${event.description || 'No description'}<br>
+            ${user ? `<button onclick="window.rsvpToEvent('${event.id}')">RSVP</button>` : 'Log in to RSVP'}<br>
+            <a href="https://twitter.com/intent/tweet?text=${shareText}%20${shareUrl}" target="_blank">Share on X</a> |
+            <a href="https://www.facebook.com/sharer/sharer.php?u=${shareUrl}" target="_blank">Facebook</a> |
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}" target="_blank">LinkedIn</a><br>
+            <div style="margin-top: 10px;">
+                <textarea id="feedback-comment-${event.id}" placeholder="Leave feedback" rows="2" style="width:100%;"></textarea>
+                <select id="feedback-rating-${event.id}">
+                <option value="">Rating</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                </select>
+                <button onclick="window.submitFeedback('${event.id}')">Submit Feedback</button>
+                <div id="feedback-list-${event.id}" style="margin-top:10px;"></div>
+                <script>window.loadFeedbackForEvent('${event.id}');</script>
+            </div>
+            </li>`;
+        });
+        html += '</ul>';
+        targetElement.innerHTML = html;
+        };
   
 
 // Call this function when the "View Events" section is shown
