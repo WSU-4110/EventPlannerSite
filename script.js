@@ -429,6 +429,27 @@ window.submitFeedback = async function(eventId) {
       alert('Failed to submit feedback.');
     }
   };
+
+    // Load feedback for an event
+    window.loadFeedbackForEvent = async function(eventId) {
+        const feedbackList = document.getElementById(`feedback-list-${eventId}`);
+        if (!feedbackList) return;
+      
+        try {
+          const feedbackRef = collection(db, 'events', eventId, 'feedback');
+          const snapshot = await getDocs(feedbackRef);
+          let html = '<ul>';
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            html += `<li><strong>${data.email}</strong>: ${data.comment} (Rating: ${data.rating || 'N/A'})</li>`;
+          });
+          html += '</ul>';
+          feedbackList.innerHTML = html;
+        } catch (error) {
+          console.error('Error loading feedback:', error);
+          feedbackList.innerHTML = '<p>Error loading feedback.</p>';
+        }
+      };
   
 
 // Call this function when the "View Events" section is shown
