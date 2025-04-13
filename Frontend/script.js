@@ -177,8 +177,37 @@ window.editEvent = async function(eventId) {
     }
   };
   
-  // Updated window.loadMyEvents to include Edit/Delete buttons
-  window.loadMyEvents = async function() {
+  window.uploadGalleryImages = async function(eventId) {
+    const fileInput = document.getElementById(`gallery-input-${eventId}`);
+    if (!fileInput || fileInput.files.length === 0) return;
+  
+    const storageRefBase = ref(storage, `event_galleries/${eventId}`);
+    const uploadedUrls = [];
+  
+    try {
+      for (const file of fileInput.files) {
+        const imageRef = ref(storageRefBase, file.name);
+        await uploadBytes(imageRef, file);
+        const url = await getDownloadURL(imageRef);
+        uploadedUrls.push(url);
+      }
+  
+      const eventRef = doc(db, 'events', eventId);
+      const eventDoc = await getDoc(eventRef);
+      if (eventDoc.exists()) {
+        const currentGallery = eventDoc.data().gallery || [];
+        await updateDoc(eventRef, { gallery: [...currentGallery, ...uploadedUrls] });
+        alert('Images uploaded to gallery.');
+        window.loadMyEvents();
+      }
+    } catch (error) {
+      console.error('Error uploading gallery images:', error);
+      alert('Failed to upload images.');
+    }
+  };
+  
+  // Modify loadMyEvents to show image gallery upload + preview
+  window.loadMyEvents = async function () {
     const myEventsList = document.getElementById('my-events-list');
     if (!myEventsList) return;
     myEventsList.innerHTML = 'Loading your events...';
@@ -196,6 +225,7 @@ window.editEvent = async function(eventId) {
           querySnapshot.forEach((doc) => {
             const eventData = doc.data();
             const eventId = doc.id;
+  
             html += `<li>
               <strong>${eventData.name}</strong><br>
               Date: ${eventData.date}, Time: ${eventData.time}<br>
@@ -204,7 +234,11 @@ window.editEvent = async function(eventId) {
               ${eventData.resourceUrl ? `<a href="${eventData.resourceUrl}" target="_blank">Download Resource</a><br>` : ''}
               <button onclick="window.viewAttendees('${eventId}')">View Attendees</button>
               <button onclick="window.editEvent('${eventId}')">Edit</button>
-              <button onclick="window.deleteEvent('${eventId}')">Delete</button>
+              <button onclick="window.deleteEvent('${eventId}')">Delete</button><br>
+              <label>Upload Gallery Images:</label>
+              <input type="file" id="gallery-input-${eventId}" multiple>
+              <button onclick="window.uploadGalleryImages('${eventId}')">Upload</button>
+              ${eventData.gallery ? eventData.gallery.map(url => `<img src="${url}" style="max-width: 100px; margin: 5px;">`).join('') : ''}
             </li>`;
           });
           html += '</ul>';
@@ -218,6 +252,7 @@ window.editEvent = async function(eventId) {
       myEventsList.innerHTML = '<p>Failed to load your events.</p>';
     }
   };
+  
   
     
 
