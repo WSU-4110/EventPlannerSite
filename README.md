@@ -26,7 +26,7 @@ This is a web application that allows users to create, manage, and attend events
 
 ## Bug Repository
 
-- 
+- [Bug Repository](https://github.com/scalenetoast/Event-Planner-Bugs)
 
 ## Authors
 
