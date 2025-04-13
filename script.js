@@ -486,6 +486,76 @@ window.submitFeedback = async function(eventId) {
         html += '</ul>';
         targetElement.innerHTML = html;
         };
+
+
+// Vendor registration
+window.registerVendor = async function () {
+    const name = document.getElementById('vendor-name').value;
+    const type = document.getElementById('vendor-type').value;
+    const contact = document.getElementById('vendor-contact').value;
+    const website = document.getElementById('vendor-website').value;
+  
+    if (!name || !type || !contact) {
+      alert('Name, type, and contact are required.');
+      return;
+    }
+  
+    try {
+      await addDoc(collection(db, 'vendors'), {
+        name: name,
+        type: type,
+        contact: contact,
+        website: website || '',
+        timestamp: new Date()
+      });
+      alert('Vendor registered successfully!');
+      window.loadVendors();
+    } catch (error) {
+      console.error('Error registering vendor:', error);
+      alert('Failed to register vendor.');
+    }
+  };
+  
+  // Load and display vendors
+  window.loadVendors = async function () {
+    const section = document.getElementById('vendor-directory-section');
+    const listContainer = document.createElement('div');
+    listContainer.innerHTML = '<h3>Registered Vendors</h3>';
+  
+    try {
+      const snapshot = await getDocs(collection(db, 'vendors'));
+      if (!snapshot.empty) {
+        let html = '<ul>';
+        snapshot.forEach(doc => {
+          const v = doc.data();
+          html += `<li>
+            <strong>${v.name}</strong><br>
+            Type: ${v.type}<br>
+            Contact: ${v.contact}<br>
+            ${v.website ? `<a href="${v.website}" target="_blank">Website</a><br>` : ''}
+          </li>`;
+        });
+        html += '</ul>';
+        listContainer.innerHTML += html;
+      } else {
+        listContainer.innerHTML += '<p>No vendors registered yet.</p>';
+      }
+    } catch (error) {
+      console.error('Error loading vendors:', error);
+      listContainer.innerHTML += '<p>Failed to load vendors.</p>';
+    }
+  
+    const old = document.getElementById('vendor-list');
+    if (old) old.remove();
+    listContainer.id = 'vendor-list';
+    section.appendChild(listContainer);
+  };
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('vendor-directory-section')) {
+      window.loadVendors();
+    }
+  });
   
 
 // Call this function when the "View Events" section is shown
