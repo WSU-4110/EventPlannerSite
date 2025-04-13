@@ -124,6 +124,10 @@
                     <input type="radio" id="private-event" name="event-visibility" value="private" onchange="toggleInviteField(this.value)">
                     <label for="private-event">Private</label>
                 </div>
+                <div>
+                    <label for="event-resource">Upload Resource (PDF/image):</label>
+                    <input type="file" id="event-resource" name="event-resource" accept=".pdf,.jpg,.png,.jpeg">
+                  </div>                  
                 <div id="invite-users-field" style="display: none;">
                     <label for="invited-emails">Invite Users (Email Addresses, comma-separated):</label>
                     <input type="text" id="invited-emails" name="invited-emails">
