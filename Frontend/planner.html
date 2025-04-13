@@ -132,6 +132,14 @@
                     <label for="invited-emails">Invite Users (Email Addresses, comma-separated):</label>
                     <input type="text" id="invited-emails" name="invited-emails">
                 </div>
+                <div>
+                    <label>Agenda Time:</label>
+                    <input type="time" id="agenda-time">
+                    <label>Agenda Item:</label>
+                    <input type="text" id="agenda-item" placeholder="e.g. Welcome Speech">
+                    <button type="button" onclick="addAgendaItem()">Add Agenda Item</button>
+                  </div>
+                  <ul id="agenda-list"></ul>                  
                 <button type="button" onclick="createNewEvent(
                     document.getElementById('event-name').value,
                     document.getElementById('event-date').value,

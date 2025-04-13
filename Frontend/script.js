@@ -55,48 +55,82 @@ window.loginUser = async function(email, password) {
      }
 };
 
+window.agendaItems = [];
+
+window.addAgendaItem = function () {
+  const time = document.getElementById("agenda-time").value;
+  const item = document.getElementById("agenda-item").value;
+
+  if (!time || !item) return alert("Please fill out both time and item fields.");
+
+  window.agendaItems.push({ time, item });
+  document.getElementById("agenda-time").value = "";
+  document.getElementById("agenda-item").value = "";
+  window.renderAgendaList();
+};
+
+window.renderAgendaList = function () {
+  const container = document.getElementById("agenda-list");
+  container.innerHTML = "";
+  window.agendaItems.forEach((a, i) => {
+    container.innerHTML += `<li>${a.time} - ${a.item}</li>`;
+  });
+};
+
+// Update createNewEvent to store agenda array
 window.createNewEvent = async function(eventName, date, time, location, description, visibility, invitedEmails) {
-    try {
-      if (!auth.currentUser) {
-        alert("You must be logged in to create an event.");
-        return;
-      }
-  
-      const eventsCollection = collection(db, 'events');
-      const eventData = {
-        name: eventName,
-        date: date,
-        time: time,
-        location: location,
-        description: description,
-        organizerId: auth.currentUser.uid,
-        timestamp: new Date(),
-        visibility: visibility
-      };
-  
-      if (visibility === 'private' && invitedEmails) {
-        eventData.invitedEmails = invitedEmails.split(',').map(email => email.trim());
-      }
-  
-      const newEventRef = await addDoc(eventsCollection, eventData);
-      const fileInput = document.getElementById('event-resource');
-  
-      if (fileInput && fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        const storageRef = ref(storage, `event_resources/${newEventRef.id}/${file.name}`);
-        await uploadBytes(storageRef, file);
-        const fileURL = await getDownloadURL(storageRef);
-        await setDoc(newEventRef, { resourceUrl: fileURL }, { merge: true });
-      }
-  
-      console.log("Event created successfully!");
-      alert(`Event created successfully! Visibility: ${visibility}`);
-      document.querySelector('#create-event-section form').reset();
-    } catch (error) {
-      console.error("Error creating event: ", error);
-      alert("Failed to create event.");
+  try {
+    if (!auth.currentUser) {
+      alert("You must be logged in to create an event.");
+      return;
     }
-  };
+
+    const eventsCollection = collection(db, 'events');
+    const eventData = {
+      name: eventName,
+      date: date,
+      time: time,
+      location: location,
+      description: description,
+      organizerId: auth.currentUser.uid,
+      timestamp: new Date(),
+      visibility: visibility,
+      agenda: window.agendaItems || []
+    };
+
+    if (visibility === 'private' && invitedEmails) {
+      eventData.invitedEmails = invitedEmails.split(',').map(email => email.trim());
+    }
+
+    const newEventRef = await addDoc(eventsCollection, eventData);
+
+    const fileInput = document.getElementById('event-resource');
+    if (fileInput && fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      const storageRef = ref(storage, `event_resources/${newEventRef.id}/${file.name}`);
+      await uploadBytes(storageRef, file);
+      const fileURL = await getDownloadURL(storageRef);
+      await setDoc(newEventRef, { resourceUrl: fileURL }, { merge: true });
+    }
+
+    alert(`Event created successfully! Visibility: ${visibility}`);
+    document.querySelector('#create-event-section form').reset();
+    window.agendaItems = [];
+    document.getElementById("agenda-list").innerHTML = "";
+  } catch (error) {
+    console.error("Error creating event: ", error);
+    alert("Failed to create event.");
+  }
+};
+
+// Update event renderers to show agenda if present
+function renderAgendaHTML(agendaArray) {
+  if (!agendaArray || !agendaArray.length) return "";
+  return '<strong>Agenda:</strong><ul>' +
+    agendaArray.map(a => `<li>${a.time} - ${a.item}</li>`).join('') +
+    '</ul>';
+}
+
 
 window.loadEvents = async function() {
     try {
