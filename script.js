@@ -1,7 +1,9 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-storage.js";
 import { getFirestore, collection, doc, setDoc, addDoc, getDocs, getDoc, query, where } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
 
 //firebase config
 const firebaseConfig = {
@@ -18,6 +20,7 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 window.registerUser = async function(email, password, username) {
     try {
@@ -54,37 +57,46 @@ window.loginUser = async function(email, password) {
 
 window.createNewEvent = async function(eventName, date, time, location, description, visibility, invitedEmails) {
     try {
-        if (!auth.currentUser) {
-            alert("You must be logged in to create an event.");
-            return;
-        }
-        const eventsCollection = collection(db, 'events'); // Get a reference to the 'events' collection
-        const eventData = {
-            name: eventName,
-            date: date,
-            time: time,
-            location: location,
-            description: description,
-            organizerId: auth.currentUser.uid, // Associate the event with the logged-in user's ID
-            timestamp: new Date(),
-            visibility: visibility
-        };
-
-        if (visibility === 'private' && invitedEmails) {
-            // For now, let's just store the raw email strings
-            eventData.invitedEmails = invitedEmails.split(',').map(email => email.trim());
-        }
-
-        await addDoc(eventsCollection, eventData);
-        console.log("Event created successfully!");
-        alert(`Event created successfully! Visibility: ${visibility}`); // Updated success message
-        // Optionally, clear the form fields after successful creation
-        document.querySelector('#create-event-section form').reset();
+      if (!auth.currentUser) {
+        alert("You must be logged in to create an event.");
+        return;
+      }
+  
+      const eventsCollection = collection(db, 'events');
+      const eventData = {
+        name: eventName,
+        date: date,
+        time: time,
+        location: location,
+        description: description,
+        organizerId: auth.currentUser.uid,
+        timestamp: new Date(),
+        visibility: visibility
+      };
+  
+      if (visibility === 'private' && invitedEmails) {
+        eventData.invitedEmails = invitedEmails.split(',').map(email => email.trim());
+      }
+  
+      const newEventRef = await addDoc(eventsCollection, eventData);
+      const fileInput = document.getElementById('event-resource');
+  
+      if (fileInput && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const storageRef = ref(storage, `event_resources/${newEventRef.id}/${file.name}`);
+        await uploadBytes(storageRef, file);
+        const fileURL = await getDownloadURL(storageRef);
+        await setDoc(newEventRef, { resourceUrl: fileURL }, { merge: true });
+      }
+  
+      console.log("Event created successfully!");
+      alert(`Event created successfully! Visibility: ${visibility}`);
+      document.querySelector('#create-event-section form').reset();
     } catch (error) {
-        console.error("Error creating event: ", error);
-        alert("Failed to create event.");
+      console.error("Error creating event: ", error);
+      alert("Failed to create event.");
     }
-};
+  };
 
 window.loadEvents = async function() {
     try {
@@ -172,7 +184,6 @@ window.editEvent = async function(eventId) {
     myEventsList.innerHTML = 'Loading your events...';
   
     try {
-      const auth = getAuth();
       const user = auth.currentUser;
   
       if (user) {
@@ -190,6 +201,7 @@ window.editEvent = async function(eventId) {
               Date: ${eventData.date}, Time: ${eventData.time}<br>
               Location: ${eventData.location || 'Not specified'}<br>
               Description: ${eventData.description || 'No description'}<br>
+              ${eventData.resourceUrl ? `<a href="${eventData.resourceUrl}" target="_blank">Download Resource</a><br>` : ''}
               <button onclick="window.viewAttendees('${eventId}')">View Attendees</button>
               <button onclick="window.editEvent('${eventId}')">Edit</button>
               <button onclick="window.deleteEvent('${eventId}')">Delete</button>
@@ -201,12 +213,12 @@ window.editEvent = async function(eventId) {
           myEventsList.innerHTML = '<p>You haven\'t created any events yet.</p>';
         }
       }
-  
     } catch (error) {
       console.error("Error loading your events: ", error);
       myEventsList.innerHTML = '<p>Failed to load your events.</p>';
     }
   };
+  
     
 
   window.loadAllEventsList = async function () {
