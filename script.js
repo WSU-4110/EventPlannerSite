@@ -120,45 +120,94 @@ window.loadEvents = async function() {
     }
 };
 
-window.loadMyEvents = async function() {
+// Insert into script.js after window.loadMyEvents definition
+
+window.editEvent = async function(eventId) {
+    try {
+      const docRef = doc(db, 'events', eventId);
+      const docSnap = await getDoc(docRef);
+  
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        const newName = prompt("Edit Event Name:", data.name);
+        const newDate = prompt("Edit Date:", data.date);
+        const newTime = prompt("Edit Time:", data.time);
+        const newLocation = prompt("Edit Location:", data.location);
+        const newDescription = prompt("Edit Description:", data.description);
+  
+        if (newName && newDate && newTime) {
+          await updateDoc(docRef, {
+            name: newName,
+            date: newDate,
+            time: newTime,
+            location: newLocation,
+            description: newDescription
+          });
+          alert("Event updated successfully.");
+          window.loadMyEvents();
+        }
+      }
+    } catch (error) {
+      console.error("Error editing event:", error);
+    }
+  };
+  
+  window.deleteEvent = async function(eventId) {
+    const confirmDelete = confirm("Are you sure you want to delete this event?");
+    if (!confirmDelete) return;
+  
+    try {
+      await deleteDoc(doc(db, 'events', eventId));
+      alert("Event deleted successfully.");
+      window.loadMyEvents();
+    } catch (error) {
+      console.error("Error deleting event:", error);
+    }
+  };
+  
+  // Updated window.loadMyEvents to include Edit/Delete buttons
+  window.loadMyEvents = async function() {
     const myEventsList = document.getElementById('my-events-list');
     if (!myEventsList) return;
     myEventsList.innerHTML = 'Loading your events...';
-
+  
     try {
-        const auth = getAuth();
-        const user = auth.currentUser;
-
-        if (user) {
-            const eventsCollection = collection(db, 'events');
-            const q = query(eventsCollection, where("organizerId", "==", user.uid));
-            const querySnapshot = await getDocs(q);
-
-            if (!querySnapshot.empty) {
-                let html = '<ul>';
-                querySnapshot.forEach((doc) => {
-                    const eventData = doc.data();
-                    const eventId = doc.id; // Get the document ID for identifying the event
-                    html += `<li>
-                        <strong>${eventData.name}</strong><br>
-                        Date: ${eventData.date}, Time: ${eventData.time}<br>
-                        Location: ${eventData.location || 'Not specified'}<br>
-                        Description: ${eventData.description || 'No description'}
-                        <button onclick="window.viewAttendees('${eventId}')">View Attendees</button>
-                    </li>`;
-                });
-                html += '</ul>';
-                myEventsList.innerHTML = html;
-            } else {
-                myEventsList.innerHTML = '<p>You haven\'t created any events yet.</p>';
-            }
+      const auth = getAuth();
+      const user = auth.currentUser;
+  
+      if (user) {
+        const eventsCollection = collection(db, 'events');
+        const q = query(eventsCollection, where("organizerId", "==", user.uid));
+        const querySnapshot = await getDocs(q);
+  
+        if (!querySnapshot.empty) {
+          let html = '<ul>';
+          querySnapshot.forEach((doc) => {
+            const eventData = doc.data();
+            const eventId = doc.id;
+            html += `<li>
+              <strong>${eventData.name}</strong><br>
+              Date: ${eventData.date}, Time: ${eventData.time}<br>
+              Location: ${eventData.location || 'Not specified'}<br>
+              Description: ${eventData.description || 'No description'}<br>
+              <button onclick="window.viewAttendees('${eventId}')">View Attendees</button>
+              <button onclick="window.editEvent('${eventId}')">Edit</button>
+              <button onclick="window.deleteEvent('${eventId}')">Delete</button>
+            </li>`;
+          });
+          html += '</ul>';
+          myEventsList.innerHTML = html;
+        } else {
+          myEventsList.innerHTML = '<p>You haven\'t created any events yet.</p>';
         }
-
+      }
+  
     } catch (error) {
-        console.error("Error loading your events: ", error);
-        myEventsList.innerHTML = '<p>Failed to load your events.</p>';
+      console.error("Error loading your events: ", error);
+      myEventsList.innerHTML = '<p>Failed to load your events.</p>';
     }
-};
+  };
+    
 
 window.loadAllEventsList = async function() {
     const viewEventsSection = document.getElementById('view-events-section');
