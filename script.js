@@ -209,44 +209,71 @@ window.editEvent = async function(eventId) {
   };
     
 
-window.loadAllEventsList = async function() {
+  window.loadAllEventsList = async function () {
     const viewEventsSection = document.getElementById('view-events-section');
     if (!viewEventsSection) return;
-    const calendarDiv = document.getElementById('calendar'); // Using the same div for now
+    const calendarDiv = document.getElementById('calendar');
     if (!calendarDiv) return;
     calendarDiv.innerHTML = 'Loading events...';
-
+  
     try {
-        const eventsCollection = collection(db, 'events');
-        const querySnapshot = await getDocs(eventsCollection);
-
-        const auth = getAuth();
-        const user = auth.currentUser;
-
-        if (!querySnapshot.empty) {
-            let html = '<ul>';
-            querySnapshot.forEach((doc) => {
-                const eventData = doc.data();
-                const eventId = doc.id;
-                html += `<li>
-                    <strong>${eventData.name}</strong><br>
-                    Date: ${eventData.date}, Time: ${eventData.time}<br>
-                    Location: ${eventData.location || 'Not specified'}<br>
-                    Description: ${eventData.description || 'No description'}<br>
-                    ${user ? `<button onclick="window.rsvpToEvent('${eventId}')">RSVP</button>` : 'Log in to RSVP'}
-                </li>`;
-            });
-            html += '</ul>';
-            calendarDiv.innerHTML = html;
-        } else {
-            calendarDiv.innerHTML = '<p>No events found.</p>';
-        }
-
+      const eventsCollection = collection(db, 'events');
+      const querySnapshot = await getDocs(eventsCollection);
+  
+      const auth = getAuth();
+      const user = auth.currentUser;
+  
+      if (!querySnapshot.empty) {
+        window.allEvents = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+  
+        window.renderEventList(window.allEvents, calendarDiv, user);
+      } else {
+        calendarDiv.innerHTML = '<p>No events found.</p>';
+      }
     } catch (error) {
-        console.error("Error loading all events: ", error);
-        calendarDiv.innerHTML = '<p>Failed to load events.</p>';
+      console.error("Error loading all events: ", error);
+      calendarDiv.innerHTML = '<p>Failed to load events.</p>';
     }
-};
+  };
+  
+  // New function to render events (used by filter and initial load)
+  window.renderEventList = function (eventList, targetElement, user) {
+    let html = '<ul>';
+    eventList.forEach(event => {
+      html += `<li>
+        <strong>${event.name}</strong><br>
+        Date: ${event.date}, Time: ${event.time}<br>
+        Location: ${event.location || 'Not specified'}<br>
+        Description: ${event.description || 'No description'}<br>
+        ${user ? `<button onclick="window.rsvpToEvent('${event.id}')">RSVP</button>` : 'Log in to RSVP'}
+      </li>`;
+    });
+    html += '</ul>';
+    targetElement.innerHTML = html;
+  };
+  
+  // Search filter function
+  window.filterEvents = function () {
+    const searchTerm = document.getElementById('event-search-input').value.toLowerCase();
+    const calendarDiv = document.getElementById('calendar');
+    if (!calendarDiv) return;
+  
+    const filtered = window.allEvents.filter(event => {
+      return (
+        event.name.toLowerCase().includes(searchTerm) ||
+        (event.location && event.location.toLowerCase().includes(searchTerm)) ||
+        event.date.includes(searchTerm)
+      );
+    });
+  
+    const auth = getAuth();
+    const user = auth.currentUser;
+    window.renderEventList(filtered, calendarDiv, user);
+  };
+  
 
 window.rsvpToEvent = async function(eventId) {
     const auth = getAuth();
@@ -255,21 +282,20 @@ window.rsvpToEvent = async function(eventId) {
     if (user) {
         try {
             const attendeesCollection = collection(db, 'events', eventId, 'attendees');
-            // Add the user's ID as the document ID in the attendees subcollection
+            
             await setDoc(doc(attendeesCollection, user.uid), {});
-            alert('You have RSVP\'d to this event!'); // Basic feedback for now
-            // You might want to update the button state or refresh the event list here
+            alert('You have RSVP\'d to this event!'); 
+            
         } catch (error) {
             console.error("Error RSVPing to event: ", error);
             alert('Failed to RSVP. Please try again.');
         }
     } else {
-        alert('You must be logged in to RSVP.'); // This should ideally not happen due to the button condition
+        alert('You must be logged in to RSVP.'); 
     }
 };
 
-// Function to load and display events the user has RSVP'd to
-// Function to load and display events the user has RSVP'd to
+
 window.loadRsvpEvents = async function() {
     const rsvpEventsList = document.getElementById('rsvp-events-list');
     if (!rsvpEventsList) return;
