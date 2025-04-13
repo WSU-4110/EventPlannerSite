@@ -24,10 +24,6 @@ This is a web application that allows users to create, manage, and attend events
 - **Social Media Sharing:** Share events across platforms.
 - **Mobile Responsive:** Works across devices and screen sizes.
 
-## Bug Repository
-
-- [Bug Repository](https://github.com/scalenetoast/Event-Planner-Bugs/issues)
-
 ## Authors
 
 - Jibran Iqbal - hk9822@wayne.edu
