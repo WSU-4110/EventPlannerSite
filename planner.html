@@ -153,6 +153,12 @@
 
         <section id="view-events-section" class="section">
             <h2>View Events</h2>
+            <input
+                type="text"
+                id="event-search-input"
+                placeholder="Search events..."
+                oninput="window.filterEvents()"
+                style="margin-bottom: 10px; padding: 8px; width: 100%;">
             <div id="calendar">
             </div>
         </section>
