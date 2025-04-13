@@ -402,6 +402,34 @@ window.loadRsvpEvents = async function () {
     targetElement.innerHTML = html;
   };
   
+  // Feedback submission
+window.submitFeedback = async function(eventId) {
+    const comment = document.getElementById(`feedback-comment-${eventId}`).value;
+    const rating = document.getElementById(`feedback-rating-${eventId}`).value;
+    const user = auth.currentUser;
+  
+    if (!user || !comment) {
+      alert('You must be logged in and provide a comment.');
+      return;
+    }
+  
+    try {
+      const feedbackRef = collection(db, 'events', eventId, 'feedback');
+      await addDoc(feedbackRef, {
+        userId: user.uid,
+        email: user.email,
+        comment: comment,
+        rating: parseInt(rating),
+        timestamp: new Date()
+      });
+      alert('Feedback submitted!');
+      window.loadAllEventsList();
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      alert('Failed to submit feedback.');
+    }
+  };
+  
 
 // Call this function when the "View Events" section is shown
 window.showSection = function(sectionId) {
