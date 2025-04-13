@@ -24,6 +24,10 @@ This is a web application that allows users to create, manage, and attend events
 - **Social Media Sharing:** Share events across platforms.
 - **Mobile Responsive:** Works across devices and screen sizes.
 
+## Bug Repository
+
+- 
+
 ## Authors
 
 - John Hu - hn1456@wayne.edu
