@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc, addDoc, getDocs, getDoc, query, where } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
 //firebase config
 const firebaseConfig = {
@@ -275,77 +275,99 @@ window.editEvent = async function(eventId) {
   };
   
 
+// Updated RSVP logic with email + timestamp
 window.rsvpToEvent = async function(eventId) {
     const auth = getAuth();
     const user = auth.currentUser;
-
+  
     if (user) {
-        try {
-            const attendeesCollection = collection(db, 'events', eventId, 'attendees');
-            
-            await setDoc(doc(attendeesCollection, user.uid), {});
-            alert('You have RSVP\'d to this event!'); 
-            
-        } catch (error) {
-            console.error("Error RSVPing to event: ", error);
-            alert('Failed to RSVP. Please try again.');
-        }
+      try {
+        const attendeesCollection = collection(db, 'events', eventId, 'attendees');
+        await setDoc(doc(attendeesCollection, user.uid), {
+          email: user.email,
+          rsvpTime: new Date()
+        });
+        alert('You have RSVP\'d to this event!');
+      } catch (error) {
+        console.error("Error RSVPing to event: ", error);
+        alert('Failed to RSVP. Please try again.');
+      }
     } else {
-        alert('You must be logged in to RSVP.'); 
+      alert('You must be logged in to RSVP.');
     }
-};
-
-
-window.loadRsvpEvents = async function() {
-    const rsvpEventsList = document.getElementById('rsvp-events-list');
-    if (!rsvpEventsList) return;
-    rsvpEventsList.innerHTML = 'Loading RSVP\'d events...';
-
+  };
+  
+  // New: View attendees list
+  window.viewAttendees = async function(eventId) {
     try {
-        const auth = getAuth();
-        const user = auth.currentUser;
-
-        if (user) {
-            const eventsCollection = collection(db, 'events');
-            const querySnapshot = await getDocs(eventsCollection);
-
-            const rsvpEvents = []; // Fixed initialization
-
-            for (const eventDoc of querySnapshot.docs) {
-                const attendeesCollection = collection(db, 'events', eventDoc.id, 'attendees');
-                const attendeeDoc = await getDoc(doc(attendeesCollection, user.uid));
-
-                if (attendeeDoc.exists()) {
-                    rsvpEvents.push({ id: eventDoc.id, ...eventDoc.data() });
-                }
-            }
-
-            if (rsvpEvents.length > 0) {
-                let html = '<ul>';
-                rsvpEvents.forEach(event => {
-                    html += `<li>
-                        <strong>${event.name}</strong><br>
-                        Date: ${event.date}, Time: ${event.time}<br>
-                        Location: ${event.location || 'Not specified'}<br>
-                        Description: ${event.description || 'No description'}
-                    </li>`;
-                });
-                html += '</ul>';
-                rsvpEventsList.innerHTML = html;
-            } else {
-                rsvpEventsList.innerHTML = '<p>You haven\'t RSVP\'d to any events yet.</p>';
-            }
-        } else {
-            rsvpEventsList.innerHTML = '<p>You are not logged in.</p>';
-        }
-
+      const attendeesCollection = collection(db, 'events', eventId, 'attendees');
+      const snapshot = await getDocs(attendeesCollection);
+  
+      if (snapshot.empty) {
+        alert("No one has RSVP'd yet.");
+        return;
+      }
+  
+      const attendees = snapshot.docs.map(doc => doc.data().email || '[Anonymous]');
+      alert(`Attendees:\n${attendees.join('\n')}`);
     } catch (error) {
-        console.error("Error loading RSVP\'d events: ", error);
-        rsvpEventsList.innerHTML = '<p>Failed to load RSVP\'d events.</p>';
+      console.error("Error loading attendees:", error);
+      alert("Failed to load attendees.");
     }
-};
+  };  
 
 
+// Fixed RSVP event display logic
+window.loadRsvpEvents = async function () {
+    const rsvpEventsList = document.getElementById('rsvp-section');
+    if (!rsvpEventsList) return;
+  
+    rsvpEventsList.innerHTML = '<h2>RSVP</h2><p>Loading RSVP\'d events...</p>';
+  
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+  
+      if (user) {
+        const eventsCollection = collection(db, 'events');
+        const querySnapshot = await getDocs(eventsCollection);
+  
+        const rsvpEvents = [];
+  
+        for (const eventDoc of querySnapshot.docs) {
+          const attendeesCollection = collection(db, 'events', eventDoc.id, 'attendees');
+          const attendeeDoc = await getDoc(doc(attendeesCollection, user.uid));
+  
+          if (attendeeDoc.exists()) {
+            rsvpEvents.push({ id: eventDoc.id, ...eventDoc.data() });
+          }
+        }
+  
+        let html = '<h2>RSVP</h2>';
+        if (rsvpEvents.length > 0) {
+          html += '<ul>';
+          rsvpEvents.forEach(event => {
+            html += `<li>
+              <strong>${event.name}</strong><br>
+              Date: ${event.date}, Time: ${event.time}<br>
+              Location: ${event.location || 'Not specified'}<br>
+              Description: ${event.description || 'No description'}
+            </li>`;
+          });
+          html += '</ul>';
+        } else {
+          html += '<p>You haven\'t RSVP\'d to any events yet.</p>';
+        }
+        rsvpEventsList.innerHTML = html;
+      } else {
+        rsvpEventsList.innerHTML = '<p>You are not logged in.</p>';
+      }
+  
+    } catch (error) {
+      console.error("Error loading RSVP\'d events: ", error);
+      rsvpEventsList.innerHTML = '<p>Failed to load RSVP\'d events.</p>';
+    }
+  };
 
 // Call this function when the "View Events" section is shown
 window.showSection = function(sectionId) {
