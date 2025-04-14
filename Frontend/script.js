@@ -613,7 +613,7 @@ window.registerVendor = async function () {
       window.loadVendors();
     }
   });
-
+  
   window.loadEventsToCalendar = async function () {
     const calendarEl = document.getElementById('full-calendar');
     if (!calendarEl) return;
@@ -664,6 +664,7 @@ window.registerVendor = async function () {
     }
   };
   
+
 
 // Call this function when the "View Events" section is shown
 window.showSection = function(sectionId) {
