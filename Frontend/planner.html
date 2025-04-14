@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Planner</title>
-
+    <link href="https://cdn.jsdelivr.net/npm/vanilla-calendar-pro/styles/index.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vanilla-calendar-pro/index.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore-compat.js"></script>
@@ -131,14 +132,6 @@
                     <label for="invited-emails">Invite Users (Email Addresses, comma-separated):</label>
                     <input type="text" id="invited-emails" name="invited-emails">
                 </div>
-                <div>
-                    <label>Agenda Time:</label>
-                    <input type="time" id="agenda-time">
-                    <label>Agenda Item:</label>
-                    <input type="text" id="agenda-item" placeholder="e.g. Welcome Speech">
-                    <button type="button" onclick="addAgendaItem()">Add Agenda Item</button>
-                  </div>
-                  <ul id="agenda-list"></ul>                  
                 <button type="button" onclick="createNewEvent(
                     document.getElementById('event-name').value,
                     document.getElementById('event-date').value,
@@ -176,6 +169,8 @@
                 placeholder="Search events..."
                 oninput="window.filterEvents()"
                 style="margin-bottom: 10px; padding: 8px; width: 100%;">
+            <div id="calendar">
+            </div>
         </section>
         <section id="my-events-section" class="section" style="display: none;">
             <h2>My Events</h2>
