@@ -614,88 +614,6 @@ window.registerVendor = async function () {
     }
   });
   
-  window.loadEventsToCalendar = async function () {
-    const calendarEl = document.getElementById('full-calendar');
-    if (!calendarEl) return;
-  
-    const querySnapshot = await getDocs(collection(db, 'events'));
-    const events = [];
-  
-    querySnapshot.forEach(doc => {
-      const data = doc.data();
-      events.push({
-        id: doc.id,
-        title: data.name,
-        start: `${data.date}T${data.time}`,
-        description: data.description,
-        location: data.location || ''
-      });
-    });
-  
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-      initialView: 'dayGridMonth',
-      events: events,
-      eventClick: function (info) {
-        const event = info.event;
-        const detailDiv = document.getElementById('event-detail-view');
-  
-        const html = `
-          <h3>${event.title}</h3>
-          <p><strong>Time:</strong> ${event.start}</p>
-          <p><strong>Location:</strong> ${event.extendedProps.location}</p>
-          <p>${event.extendedProps.description}</p>
-          ${auth.currentUser ? `<button onclick="window.rsvpToEvent('${event.id}')">RSVP</button>` : 'Log in to RSVP'}
-          <br>
-          <a href="mailto:${auth.currentUser?.email}?subject=RSVP Confirmation for ${event.title}&body=Thanks for RSVP'ing to ${event.title}!">Send RSVP Email</a><br>
-          <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(event.title)}" target="_blank">Share on X</a> |
-          <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}" target="_blank">Facebook</a> |
-          <a href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}" target="_blank">LinkedIn</a>
-          <br><br>
-          <textarea id="feedback-comment-${event.id}" placeholder="Leave feedback" rows="2" style="width:100%;"></textarea>
-          <select id="feedback-rating-${event.id}">
-            <option value="">Rating</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-          </select>
-          <button onclick="window.submitFeedback('${event.id}')">Submit Feedback</button>
-          <div id="feedback-list-${event.id}" style="margin-top:10px;"></div>
-          <script>window.loadFeedbackForEvent('${event.id}');</script>
-        `;
-  
-        detailDiv.innerHTML = html;
-      }
-    });
-  
-    calendar.render();
-  };
-  
-  
-  // Modify showSection to call loadEventsToCalendar
-  const originalShowSection = window.showSection;
-  window.showSection = function(sectionId) {
-    const sections = document.querySelectorAll('.container > .section');
-    sections.forEach(section => {
-      section.style.display = 'none';
-    });
-  
-    const sectionToShow = document.getElementById(sectionId);
-    if (sectionToShow) {
-      sectionToShow.style.display = 'block';
-    }
-  
-    if (sectionId === 'view-events-section') {
-      window.loadEventsToCalendar();
-    } else if (sectionId === 'my-events-section') {
-      window.loadMyEvents();
-    } else if (sectionId === 'rsvp-section') {
-      window.loadRsvpEvents();
-    }
-  };
-  
-
 
 // Call this function when the "View Events" section is shown
 window.showSection = function(sectionId) {
@@ -710,7 +628,7 @@ window.showSection = function(sectionId) {
     }
 
     if (sectionId === 'view-events-section') {
-      window.loadEventsToCalendar();
+        window.loadAllEventsList();
     } else if (sectionId === 'my-events-section') {
         window.loadMyEvents();
     } else if (sectionId === 'rsvp-section') { // Updated condition for the RSVP section
