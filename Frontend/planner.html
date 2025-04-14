@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Planner</title>
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.css" rel="stylesheet" />
+    
+    <link href="https://unpkg.com/@fullcalendar/core@6.1.17/index.min.css" rel="stylesheet" />
+    <link href="https://unpkg.com/@fullcalendar/daygrid@6.1.17/index.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
@@ -178,6 +180,7 @@
                 oninput="window.filterEvents()"
                 style="margin-bottom: 10px; padding: 8px; width: 100%;">
                 <div id="full-calendar"></div>
+                <div id="event-detail-view" style="margin-top: 20px;"></div>
         </section>
         <section id="my-events-section" class="section" style="display: none;">
             <h2>My Events</h2>
