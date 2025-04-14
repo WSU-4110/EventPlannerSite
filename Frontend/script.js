@@ -613,6 +613,56 @@ window.registerVendor = async function () {
       window.loadVendors();
     }
   });
+
+  window.loadEventsToCalendar = async function () {
+    const calendarEl = document.getElementById('full-calendar');
+    if (!calendarEl) return;
+  
+    const querySnapshot = await getDocs(collection(db, 'events'));
+    const events = [];
+  
+    querySnapshot.forEach(doc => {
+      const data = doc.data();
+      events.push({
+        title: data.name,
+        start: `${data.date}T${data.time}`,
+        description: data.description,
+        location: data.location || ''
+      });
+    });
+  
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      events: events,
+      eventClick: function (info) {
+        alert(`Event: ${info.event.title}\nTime: ${info.event.start}\nLocation: ${info.event.extendedProps.location}\n\n${info.event.extendedProps.description}`);
+      }
+    });
+  
+    calendar.render();
+  };
+  
+  // Modify showSection to call loadEventsToCalendar
+  const originalShowSection = window.showSection;
+  window.showSection = function(sectionId) {
+    const sections = document.querySelectorAll('.container > .section');
+    sections.forEach(section => {
+      section.style.display = 'none';
+    });
+  
+    const sectionToShow = document.getElementById(sectionId);
+    if (sectionToShow) {
+      sectionToShow.style.display = 'block';
+    }
+  
+    if (sectionId === 'view-events-section') {
+      window.loadEventsToCalendar();
+    } else if (sectionId === 'my-events-section') {
+      window.loadMyEvents();
+    } else if (sectionId === 'rsvp-section') {
+      window.loadRsvpEvents();
+    }
+  };
   
 
 // Call this function when the "View Events" section is shown
