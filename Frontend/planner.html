@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Planner</title>
-    <link href="https://cdn.jsdelivr.net/npm/vanilla-calendar-pro/styles/index.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/vanilla-calendar-pro/index.js" defer></script>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore-compat.js"></script>
@@ -177,8 +177,7 @@
                 placeholder="Search events..."
                 oninput="window.filterEvents()"
                 style="margin-bottom: 10px; padding: 8px; width: 100%;">
-            <div id="calendar">
-            </div>
+                <div id="full-calendar"></div>
         </section>
         <section id="my-events-section" class="section" style="display: none;">
             <h2>My Events</h2>
