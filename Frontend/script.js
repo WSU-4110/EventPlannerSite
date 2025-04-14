@@ -31,7 +31,7 @@ window.registerUser = async function(email, password, username) {
         await setDoc(doc(db, 'users', user.uid), {
             username: username
         });
-        window.location.href = './planner.html'; // Redirect to the planner page
+        window.location.href = './planner.html';
     } catch (error) {
         const errorCode = error.code;
         const errorMessage = error.message;
@@ -46,7 +46,7 @@ window.loginUser = async function(email, password) {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         console.log("Login successful:", user);
-        window.location.href = './planner.html'; // Redirect to the planner page
+        window.location.href = './planner.html';
     } catch (error) {
         const errorCode = error.code;
         const errorMessage = error.message;
