@@ -628,7 +628,7 @@ window.showSection = function(sectionId) {
     }
 
     if (sectionId === 'view-events-section') {
-        window.loadAllEventsList();
+      window.loadEventsToCalendar();
     } else if (sectionId === 'my-events-section') {
         window.loadMyEvents();
     } else if (sectionId === 'rsvp-section') { // Updated condition for the RSVP section
