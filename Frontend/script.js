@@ -291,74 +291,60 @@ window.editEvent = async function(eventId) {
     
 
   window.loadAllEventsList = async function () {
-    const viewEventsSection = document.getElementById('view-events-section');
-    if (!viewEventsSection) return;
     const calendarDiv = document.getElementById('calendar');
     if (!calendarDiv) return;
-    calendarDiv.innerHTML = 'Loading events...';
   
-    try {
-      const eventsCollection = collection(db, 'events');
-      const querySnapshot = await getDocs(eventsCollection);
-  
-      const auth = getAuth();
-      const user = auth.currentUser;
-  
-      if (!querySnapshot.empty) {
-        let html = '<ul>';
-        querySnapshot.forEach((doc) => {
-          const eventData = doc.data();
-          const eventId = doc.id;
-          const mailSubject = encodeURIComponent(`RSVP Confirmation for ${eventData.name}`);
-          const mailBody = encodeURIComponent(`Thanks for RSVP'ing to ${eventData.name} on ${eventData.date} at ${eventData.time}.`);
-  
-          html += `<li>
-            <strong>${eventData.name}</strong><br>
-            Date: ${eventData.date}, Time: ${eventData.time}<br>
-            Location: ${eventData.location || 'Not specified'}<br>
-            Description: ${eventData.description || 'No description'}<br>
-            ${user ? `<button onclick="window.rsvpToEvent('${eventId}')">RSVP</button>` : 'Log in to RSVP'}<br>
-            <a href="mailto:${user?.email}?subject=${mailSubject}&body=${mailBody}">Send RSVP Email</a><br>
-            <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(eventData.name)}" target="_blank">Share on X</a> |
-            <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}" target="_blank">Facebook</a> |
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}" target="_blank">LinkedIn</a><br>
-            <textarea id="feedback-comment-${eventId}" placeholder="Leave feedback" rows="2" style="width:100%;"></textarea>
-            <select id="feedback-rating-${eventId}">
-              <option value="">Rating</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-            </select>
-            <button onclick="window.submitFeedback('${eventId}')">Submit Feedback</button>
-            <div id="feedback-list-${eventId}" style="margin-top:10px;"></div>
-            <script>window.loadFeedbackForEvent('${eventId}');</script>
-          </li>`;
-        });
-        html += '</ul>';
-        calendarDiv.innerHTML = html;
-      } else {
-        calendarDiv.innerHTML = '<p>No events found.</p>';
-      }
-  
-    } catch (error) {
-      console.error("Error loading all events: ", error);
-      calendarDiv.innerHTML = '<p>Failed to load events.</p>';
+    const searchInputId = 'event-search-input';
+    if (!document.getElementById(searchInputId)) {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.id = searchInputId;
+      input.placeholder = 'Search events...';
+      input.style.marginBottom = '10px';
+      input.style.display = 'block';
+      input.oninput = () => window.filterEvents();
+      calendarDiv.before(input);
     }
+  
+    const querySnapshot = await getDocs(collection(db, 'events'));
+    const auth = getAuth();
+    const user = auth.currentUser;
+  
+    window._allEvents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    window.renderEventList(window._allEvents, calendarDiv, user);
   };
+  
   
   
   // New function to render events (used by filter and initial load)
   window.renderEventList = function (eventList, targetElement, user) {
     let html = '<ul>';
     eventList.forEach(event => {
+      const mailSubject = encodeURIComponent(`RSVP Confirmation for ${event.name}`);
+      const mailBody = encodeURIComponent(`Thanks for RSVP'ing to ${event.name} on ${event.date} at ${event.time}.`);
+  
       html += `<li>
         <strong>${event.name}</strong><br>
         Date: ${event.date}, Time: ${event.time}<br>
         Location: ${event.location || 'Not specified'}<br>
         Description: ${event.description || 'No description'}<br>
-        ${user ? `<button onclick="window.rsvpToEvent('${event.id}')">RSVP</button>` : 'Log in to RSVP'}
+        ${user ? `<button onclick="window.rsvpToEvent('${event.id}')">RSVP</button>` : 'Log in to RSVP'}<br>
+        <a href="mailto:${user?.email}?subject=${mailSubject}&body=${mailBody}">Send RSVP Email</a><br>
+        <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(event.name)}" target="_blank">Share on X</a> |
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}" target="_blank">Facebook</a> |
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}" target="_blank">LinkedIn</a><br>
+        <textarea id="feedback-comment-${event.id}" placeholder="Leave feedback" rows="2" style="width:100%;"></textarea>
+        <select id="feedback-rating-${event.id}">
+          <option value="">Rating</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+        </select>
+        <button onclick="window.submitFeedback('${event.id}')">Submit Feedback</button>
+        <div id="feedback-list-${event.id}" style="margin-top:10px;"></div>
+        <script>window.loadFeedbackForEvent('${event.id}');</script>
       </li>`;
     });
     html += '</ul>';
