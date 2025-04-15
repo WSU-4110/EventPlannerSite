@@ -317,59 +317,54 @@ window.editEvent = async function(eventId) {
   
   
   // New function to render events (used by filter and initial load)
-  window.renderEventList = function (eventList, targetElement, user) {
-    let html = '<ul>';
-    eventList.forEach(event => {
-      const mailSubject = encodeURIComponent(`RSVP Confirmation for ${event.name}`);
-      const mailBody = encodeURIComponent(`Thanks for RSVP'ing to ${event.name} on ${event.date} at ${event.time}.`);
-  
-      html += `<li>
-        <strong>${event.name}</strong><br>
-        Date: ${event.date}, Time: ${event.time}<br>
-        Location: ${event.location || 'Not specified'}<br>
-        Description: ${event.description || 'No description'}<br>
-        ${user ? `<button onclick="window.rsvpToEvent('${event.id}')">RSVP</button>` : 'Log in to RSVP'}<br>
-        <a href="mailto:${user?.email}?subject=${mailSubject}&body=${mailBody}">Send RSVP Email</a><br>
-        <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(event.name)}" target="_blank">Share on X</a> |
-        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}" target="_blank">Facebook</a> |
-        <a href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}" target="_blank">LinkedIn</a><br>
-        <textarea id="feedback-comment-${event.id}" placeholder="Leave feedback" rows="2" style="width:100%;"></textarea>
-        <select id="feedback-rating-${event.id}">
-          <option value="">Rating</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-        </select>
-        <button onclick="window.submitFeedback('${event.id}')">Submit Feedback</button>
-        <div id="feedback-list-${event.id}" style="margin-top:10px;"></div>
-        <script>window.loadFeedbackForEvent('${event.id}');</script>
-      </li>`;
-    });
-    html += '</ul>';
-    targetElement.innerHTML = html;
-  };
+window.renderEventList = function (eventList, targetElement, user) {
+  let html = '<ul>';
+  eventList.forEach(event => {
+    const mailSubject = encodeURIComponent(`RSVP Confirmation for ${event.name}`);
+    const mailBody = encodeURIComponent(`Thanks for RSVP'ing to ${event.name} on ${event.date} at ${event.time}.`);
+
+    html += `<li>
+      <strong>${event.name}</strong><br>
+      Date: ${event.date}, Time: ${event.time}<br>
+      Location: ${event.location || 'Not specified'}<br>
+      Description: ${event.description || 'No description'}<br>
+      ${user ? `<button onclick="window.rsvpToEvent('${event.id}')">RSVP</button>` : 'Log in to RSVP'}<br>
+      <a href="mailto:${user?.email}?subject=${mailSubject}&body=${mailBody}">Send RSVP Email</a><br>
+      <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(event.name)}" target="_blank">Share on X</a> |
+      <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}" target="_blank">Facebook</a> |
+      <a href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}" target="_blank">LinkedIn</a><br>
+      <textarea id="feedback-comment-${event.id}" placeholder="Leave feedback" rows="2" style="width:100%;"></textarea>
+      <select id="feedback-rating-${event.id}">
+        <option value="">Rating</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+      <button onclick="window.submitFeedback('${event.id}')">Submit Feedback</button>
+      <div id="feedback-list-${event.id}" style="margin-top:10px;"></div>
+      <script>window.loadFeedbackForEvent('${event.id}');</script>
+    </li>`;
+  });
+  html += '</ul>';
+  targetElement.innerHTML = html;
+};
   
   // Search filter function
-  window.filterEvents = function () {
-    const searchTerm = document.getElementById('event-search-input').value.toLowerCase();
-    const calendarDiv = document.getElementById('calendar');
-    if (!calendarDiv) return;
-  
-    const filtered = window.allEvents.filter(event => {
-      return (
-        event.name.toLowerCase().includes(searchTerm) ||
-        (event.location && event.location.toLowerCase().includes(searchTerm)) ||
-        event.date.includes(searchTerm)
-      );
-    });
-  
-    const auth = getAuth();
-    const user = auth.currentUser;
-    window.renderEventList(filtered, calendarDiv, user);
-  };
-  
+window.filterEvents = function () {
+  const input = document.getElementById('event-search-input').value.toLowerCase();
+  const filtered = window._allEvents.filter(e =>
+    e.name.toLowerCase().includes(input) ||
+    e.location.toLowerCase().includes(input) ||
+    e.description.toLowerCase().includes(input)
+  );
+  const auth = getAuth();
+  const user = auth.currentUser;
+  const calendarDiv = document.getElementById('calendar');
+  window.renderEventList(filtered, calendarDiv, user);
+};
+
 
 // Updated RSVP logic with email + timestamp
 window.rsvpToEvent = async function(eventId) {
