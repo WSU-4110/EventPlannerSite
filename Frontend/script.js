@@ -588,66 +588,97 @@ window.submitFeedback = async function(eventId) {
 
 // Vendor registration
 window.registerVendor = async function () {
-    const name = document.getElementById('vendor-name').value;
-    const type = document.getElementById('vendor-type').value;
-    const contact = document.getElementById('vendor-contact').value;
-    const website = document.getElementById('vendor-website').value;
-  
-    if (!name || !type || !contact) {
-      alert('Name, type, and contact are required.');
-      return;
-    }
-  
-    try {
-      await addDoc(collection(db, 'vendors'), {
-        name: name,
-        type: type,
-        contact: contact,
-        website: website || '',
-        timestamp: new Date()
-      });
-      alert('Vendor registered successfully!');
-      window.loadVendors();
-    } catch (error) {
-      console.error('Error registering vendor:', error);
-      alert('Failed to register vendor.');
-    }
-  };
-  
-  // Load and display vendors
-  window.loadVendors = async function () {
-    const section = document.getElementById('vendor-directory-section');
-    const listContainer = document.createElement('div');
-    listContainer.innerHTML = '<h3>Registered Vendors</h3>';
-  
-    try {
-      const snapshot = await getDocs(collection(db, 'vendors'));
-      if (!snapshot.empty) {
-        let html = '<ul>';
-        snapshot.forEach(doc => {
-          const v = doc.data();
-          html += `<li>
-            <strong>${v.name}</strong><br>
-            Type: ${v.type}<br>
-            Contact: ${v.contact}<br>
-            ${v.website ? `<a href="${v.website}" target="_blank">Website</a><br>` : ''}
-          </li>`;
-        });
-        html += '</ul>';
-        listContainer.innerHTML += html;
-      } else {
-        listContainer.innerHTML += '<p>No vendors registered yet.</p>';
-      }
-    } catch (error) {
-      console.error('Error loading vendors:', error);
-      listContainer.innerHTML += '<p>Failed to load vendors.</p>';
-    }
-  
-    const old = document.getElementById('vendor-list');
-    if (old) old.remove();
-    listContainer.id = 'vendor-list';
-    section.appendChild(listContainer);
-  };
+  const name = document.getElementById('vendor-name').value;
+  const type = document.getElementById('vendor-type').value;
+  const contact = document.getElementById('vendor-contact').value;
+  const website = document.getElementById('vendor-website').value;
+
+  if (!name || !type || !contact) {
+    alert('Name, type, and contact are required.');
+    return;
+  }
+
+  try {
+    await addDoc(collection(db, 'vendors'), {
+      name: name,
+      type: type,
+      contact: contact,
+      website: website || '',
+      timestamp: new Date()
+    });
+    alert('Vendor registered successfully!');
+    window.loadVendors();
+  } catch (error) {
+    console.error('Error registering vendor:', error);
+    alert('Failed to register vendor.');
+  }
+};
+
+// Load and display vendors with search support
+window.loadVendors = async function () {
+  const section = document.getElementById('vendor-directory-section');
+  const searchInputId = 'vendor-search-input';
+  const listContainerId = 'vendor-list';
+
+  // Add search bar if not already present
+  if (!document.getElementById(searchInputId)) {
+    const searchBar = document.createElement('input');
+    searchBar.type = 'text';
+    searchBar.id = searchInputId;
+    searchBar.placeholder = 'Search vendors by name or type';
+    searchBar.style.marginBottom = '10px';
+    searchBar.style.display = 'block';
+    searchBar.oninput = () => window.filterVendors();
+    section.appendChild(searchBar);
+  }
+
+  const snapshot = await getDocs(collection(db, 'vendors'));
+  window._allVendors = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  window.renderVendorList(window._allVendors);
+};
+
+window.renderVendorList = function (vendorArray) {
+  const section = document.getElementById('vendor-directory-section');
+  let existing = document.getElementById('vendor-list');
+  if (existing) existing.remove();
+
+  const container = document.createElement('div');
+  container.id = 'vendor-list';
+
+  if (vendorArray.length === 0) {
+    container.innerHTML = '<p>No vendors match your search.</p>';
+  } else {
+    let html = '<h3>Registered Vendors</h3><ul>';
+    vendorArray.forEach(v => {
+      html += `<li>
+        <strong>${v.name}</strong><br>
+        Type: ${v.type}<br>
+        Contact: ${v.contact}<br>
+        ${v.website ? `<a href="${v.website}" target="_blank">Website</a><br>` : ''}
+      </li>`;
+    });
+    html += '</ul>';
+    container.innerHTML = html;
+  }
+
+  section.appendChild(container);
+};
+
+window.filterVendors = function () {
+  const input = document.getElementById('vendor-search-input').value.toLowerCase();
+  const filtered = window._allVendors.filter(v =>
+    v.name.toLowerCase().includes(input) ||
+    v.type.toLowerCase().includes(input)
+  );
+  window.renderVendorList(filtered);
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (document.getElementById('vendor-directory-section')) {
+    window.loadVendors();
+  }
+});
+
   
   document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('vendor-directory-section')) {
