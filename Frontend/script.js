@@ -27,17 +27,17 @@ window.registerUser = async function(email, password, username) {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         console.log("Registration successful:", user);
-        
+        // Optionally, store the username in Firestore
         await setDoc(doc(db, 'users', user.uid), {
             username: username
         });
-        window.location.href = './planner.html';
+        window.location.href = './planner.html'; // Redirect to the planner page
     } catch (error) {
         const errorCode = error.code;
         const errorMessage = error.message;
         console.error("Registration error:", errorCode, errorMessage);
         alert("Registration failed: " + errorMessage);
-        
+        // Handle errors (e.g., display error message to the user)
     }
 };
 
@@ -46,7 +46,7 @@ window.loginUser = async function(email, password) {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         console.log("Login successful:", user);
-        window.location.href = './planner.html';
+        window.location.href = './planner.html'; // Redirect to the planner page
     } catch (error) {
         const errorCode = error.code;
         const errorMessage = error.message;
@@ -55,48 +55,82 @@ window.loginUser = async function(email, password) {
      }
 };
 
+window.agendaItems = [];
+
+window.addAgendaItem = function () {
+  const time = document.getElementById("agenda-time").value;
+  const item = document.getElementById("agenda-item").value;
+
+  if (!time || !item) return alert("Please fill out both time and item fields.");
+
+  window.agendaItems.push({ time, item });
+  document.getElementById("agenda-time").value = "";
+  document.getElementById("agenda-item").value = "";
+  window.renderAgendaList();
+};
+
+window.renderAgendaList = function () {
+  const container = document.getElementById("agenda-list");
+  container.innerHTML = "";
+  window.agendaItems.forEach((a, i) => {
+    container.innerHTML += `<li>${a.time} - ${a.item}</li>`;
+  });
+};
+
+// Update createNewEvent to store agenda array
 window.createNewEvent = async function(eventName, date, time, location, description, visibility, invitedEmails) {
-    try {
-      if (!auth.currentUser) {
-        alert("You must be logged in to create an event.");
-        return;
-      }
-  
-      const eventsCollection = collection(db, 'events');
-      const eventData = {
-        name: eventName,
-        date: date,
-        time: time,
-        location: location,
-        description: description,
-        organizerId: auth.currentUser.uid,
-        timestamp: new Date(),
-        visibility: visibility
-      };
-  
-      if (visibility === 'private' && invitedEmails) {
-        eventData.invitedEmails = invitedEmails.split(',').map(email => email.trim());
-      }
-  
-      const newEventRef = await addDoc(eventsCollection, eventData);
-      const fileInput = document.getElementById('event-resource');
-  
-      if (fileInput && fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        const storageRef = ref(storage, `event_resources/${newEventRef.id}/${file.name}`);
-        await uploadBytes(storageRef, file);
-        const fileURL = await getDownloadURL(storageRef);
-        await setDoc(newEventRef, { resourceUrl: fileURL }, { merge: true });
-      }
-  
-      console.log("Event created successfully!");
-      alert(`Event created successfully! Visibility: ${visibility}`);
-      document.querySelector('#create-event-section form').reset();
-    } catch (error) {
-      console.error("Error creating event: ", error);
-      alert("Failed to create event.");
+  try {
+    if (!auth.currentUser) {
+      alert("You must be logged in to create an event.");
+      return;
     }
-  };
+
+    const eventsCollection = collection(db, 'events');
+    const eventData = {
+      name: eventName,
+      date: date,
+      time: time,
+      location: location,
+      description: description,
+      organizerId: auth.currentUser.uid,
+      timestamp: new Date(),
+      visibility: visibility,
+      agenda: window.agendaItems || []
+    };
+
+    if (visibility === 'private' && invitedEmails) {
+      eventData.invitedEmails = invitedEmails.split(',').map(email => email.trim());
+    }
+
+    const newEventRef = await addDoc(eventsCollection, eventData);
+
+    const fileInput = document.getElementById('event-resource');
+    if (fileInput && fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      const storageRef = ref(storage, `event_resources/${newEventRef.id}/${file.name}`);
+      await uploadBytes(storageRef, file);
+      const fileURL = await getDownloadURL(storageRef);
+      await setDoc(newEventRef, { resourceUrl: fileURL }, { merge: true });
+    }
+
+    alert(`Event created successfully! Visibility: ${visibility}`);
+    document.querySelector('#create-event-section form').reset();
+    window.agendaItems = [];
+    document.getElementById("agenda-list").innerHTML = "";
+  } catch (error) {
+    console.error("Error creating event: ", error);
+    alert("Failed to create event.");
+  }
+};
+
+// Update event renderers to show agenda if present
+function renderAgendaHTML(agendaArray) {
+  if (!agendaArray || !agendaArray.length) return "";
+  return '<strong>Agenda:</strong><ul>' +
+    agendaArray.map(a => `<li>${a.time} - ${a.item}</li>`).join('') +
+    '</ul>';
+}
+
 
 window.loadEvents = async function() {
     try {
@@ -132,6 +166,7 @@ window.loadEvents = async function() {
     }
 };
 
+// Insert into script.js after window.loadMyEvents definition
 
 window.editEvent = async function(eventId) {
     try {
@@ -204,7 +239,8 @@ window.editEvent = async function(eventId) {
       alert('Failed to upload images.');
     }
   };
-
+  
+  // Modify loadMyEvents to show image gallery upload + preview
   window.loadMyEvents = async function () {
     const myEventsList = document.getElementById('my-events-list');
     if (!myEventsList) return;
@@ -284,6 +320,7 @@ window.editEvent = async function(eventId) {
     }
   };
   
+  // New function to render events (used by filter and initial load)
   window.renderEventList = function (eventList, targetElement, user) {
     let html = '<ul>';
     eventList.forEach(event => {
@@ -319,7 +356,7 @@ window.editEvent = async function(eventId) {
   };
   
 
-
+// Updated RSVP logic with email + timestamp
 window.rsvpToEvent = async function(eventId) {
     const auth = getAuth();
     const user = auth.currentUser;
@@ -462,50 +499,62 @@ window.submitFeedback = async function(eventId) {
     }
   };
 
-  // Load feedback for an event
-  window.loadFeedbackForEvent = async function(eventId) {
-      const feedbackList = document.getElementById(`feedback-list-${eventId}`);
-      if (!feedbackList) return;
-    
-      try {
-        const feedbackRef = collection(db, 'events', eventId, 'feedback');
-        const snapshot = await getDocs(feedbackRef);
-        let html = '<ul>';
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          html += `<li><strong>${data.email}</strong>: ${data.comment} (Rating: ${data.rating || 'N/A'})</li>`;
-        });
-        html += '</ul>';
-        feedbackList.innerHTML = html;
-      } catch (error) {
-        console.error('Error loading feedback:', error);
-        feedbackList.innerHTML = '<p>Error loading feedback.</p>';
-      }
-    };
-
-  window.renderEventList = function (eventList, targetElement, user) {
-    let html = '<ul>';
-    eventList.forEach(event => {
-      const shareUrl = encodeURIComponent(window.location.href);
-      const shareText = encodeURIComponent(`${event.name} on ${event.date} at ${event.time} - ${event.description}`);
-      const mailSubject = encodeURIComponent(`RSVP Confirmation for ${event.name}`);
-      const mailBody = encodeURIComponent(`Thanks for RSVP'ing to ${event.name} on ${event.date} at ${event.time}. We look forward to seeing you!`);
-  
-      html += `<li>
-        <strong>${event.name}</strong><br>
-        Date: ${event.date}, Time: ${event.time}<br>
-        Location: ${event.location || 'Not specified'}<br>
-        Description: ${event.description || 'No description'}<br>
-        ${user ? `<button onclick="window.rsvpToEvent('${event.id}')">RSVP</button> | <a href='mailto:${user.email}?subject=${mailSubject}&body=${mailBody}'>Send RSVP Email</a>` : 'Log in to RSVP'}<br>
-        <a href="https://twitter.com/intent/tweet?text=${shareText}%20${shareUrl}" target="_blank">Share on X</a> |
-        <a href="https://www.facebook.com/sharer/sharer.php?u=${shareUrl}" target="_blank">Facebook</a> |
-        <a href="https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}" target="_blank">LinkedIn</a><br>
-      </li>`;
-    });
-    html += '</ul>';
-    targetElement.innerHTML = html;
-  };
+    // Load feedback for an event
+    window.loadFeedbackForEvent = async function(eventId) {
+        const feedbackList = document.getElementById(`feedback-list-${eventId}`);
+        if (!feedbackList) return;
       
+        try {
+          const feedbackRef = collection(db, 'events', eventId, 'feedback');
+          const snapshot = await getDocs(feedbackRef);
+          let html = '<ul>';
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            html += `<li><strong>${data.email}</strong>: ${data.comment} (Rating: ${data.rating || 'N/A'})</li>`;
+          });
+          html += '</ul>';
+          feedbackList.innerHTML = html;
+        } catch (error) {
+          console.error('Error loading feedback:', error);
+          feedbackList.innerHTML = '<p>Error loading feedback.</p>';
+        }
+      };
+
+  // Modify renderEventList to include feedback form and display
+  window.renderEventList = function (eventList, targetElement, user) {
+      let html = '<ul>';
+      eventList.forEach(event => {
+          const shareUrl = encodeURIComponent(window.location.href);
+          const shareText = encodeURIComponent(`${event.name} on ${event.date} at ${event.time} - ${event.description}`);
+      
+          html += `<li>
+          <strong>${event.name}</strong><br>
+          Date: ${event.date}, Time: ${event.time}<br>
+          Location: ${event.location || 'Not specified'}<br>
+          Description: ${event.description || 'No description'}<br>
+          ${user ? `<button onclick="window.rsvpToEvent('${event.id}')">RSVP</button>` : 'Log in to RSVP'}<br>
+          <a href="https://twitter.com/intent/tweet?text=${shareText}%20${shareUrl}" target="_blank">Share on X</a> |
+          <a href="https://www.facebook.com/sharer/sharer.php?u=${shareUrl}" target="_blank">Facebook</a> |
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}" target="_blank">LinkedIn</a><br>
+          <div style="margin-top: 10px;">
+              <textarea id="feedback-comment-${event.id}" placeholder="Leave feedback" rows="2" style="width:100%;"></textarea>
+              <select id="feedback-rating-${event.id}">
+              <option value="">Rating</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              </select>
+              <button onclick="window.submitFeedback('${event.id}')">Submit Feedback</button>
+              <div id="feedback-list-${event.id}" style="margin-top:10px;"></div>
+              <script>window.loadFeedbackForEvent('${event.id}');</script>
+          </div>
+          </li>`;
+      });
+      html += '</ul>';
+      targetElement.innerHTML = html;
+      };
 
 
 // Vendor registration
@@ -576,88 +625,27 @@ window.registerVendor = async function () {
       window.loadVendors();
     }
   });
-
-  window.loadRsvpCalendar = async function () {
-    const calendarEl = document.getElementById('rsvp-calendar');
-    if (!calendarEl) return;
   
-    const auth = getAuth();
-    const user = auth.currentUser;
-    if (!user) return;
-  
-    const allEvents = await getDocs(collection(db, 'events'));
-    const rsvpEvents = [];
-  
-    for (const eventDoc of allEvents.docs) {
-      const attendeesRef = doc(db, 'events', eventDoc.id, 'attendees', user.uid);
-      const attendeeSnap = await getDoc(attendeesRef);
-      if (attendeeSnap.exists()) {
-        const data = eventDoc.data();
-        rsvpEvents.push({
-          id: eventDoc.id,
-          title: data.name,
-          start: `${data.date}T${data.time}`,
-          description: data.description,
-          location: data.location || ''
-        });
-      }
-    }
-  
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-      initialView: 'dayGridMonth',
-      events: rsvpEvents,
-      eventClick: function (info) {
-        const e = info.event;
-        const detailDiv = document.getElementById('rsvp-detail-view');
-        const html = `
-          <h3>${e.title}</h3>
-          <p><strong>Time:</strong> ${e.start}</p>
-          <p><strong>Location:</strong> ${e.extendedProps.location}</p>
-          <p>${e.extendedProps.description}</p>
-          <a href="mailto:${auth.currentUser.email}?subject=RSVP Confirmation for ${e.title}&body=Thanks for RSVP'ing to ${e.title}!">Send RSVP Email</a><br>
-          <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(e.title)}" target="_blank">Share on X</a> |
-          <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}" target="_blank">Facebook</a> |
-          <a href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}" target="_blank">LinkedIn</a>
-          <br><br>
-          <textarea id="feedback-comment-${e.id}" placeholder="Leave feedback" rows="2" style="width:100%;"></textarea>
-          <select id="feedback-rating-${e.id}">
-            <option value="">Rating</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-          </select>
-          <button onclick="window.submitFeedback('${e.id}')">Submit Feedback</button>
-          <div id="feedback-list-${e.id}" style="margin-top:10px;"></div>
-          <script>window.loadFeedbackForEvent('${e.id}');</script>
-        `;
-        detailDiv.innerHTML = html;
-      }
-    });
-  
-    calendar.render();
-  };
 
 // Call this function when the "View Events" section is shown
 window.showSection = function(sectionId) {
-  const sections = document.querySelectorAll('.container > .section');
-  sections.forEach(section => {
-    section.style.display = 'none';
-  });
+    const sections = document.querySelectorAll('.container > .section');
+    sections.forEach(section => {
+        section.style.display = 'none';
+    });
 
-  const sectionToShow = document.getElementById(sectionId);
-  if (sectionToShow) {
-    sectionToShow.style.display = 'block';
-  }
+    const sectionToShow = document.getElementById(sectionId);
+    if (sectionToShow) {
+        sectionToShow.style.display = 'block';
+    }
 
-  if (sectionId === 'view-events-section') {
-    window.loadAllEventsList();
-  } else if (sectionId === 'my-events-section') {
-    window.loadMyEvents();
-  } else if (sectionId === 'rsvp-section') {
-    window.loadRsvpCalendar();
-  }
+    if (sectionId === 'view-events-section') {
+        window.loadAllEventsList();
+    } else if (sectionId === 'my-events-section') {
+        window.loadMyEvents();
+    } else if (sectionId === 'rsvp-section') { // Updated condition for the RSVP section
+        window.loadRsvpEvents(); // We'll create this function next
+    }
 };
 
 // Initially show the "View Events" section

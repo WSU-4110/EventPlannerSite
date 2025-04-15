@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Planner</title>
-
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.css" rel="stylesheet" />
-
+    <link href="https://cdn.jsdelivr.net/npm/vanilla-calendar-pro/styles/index.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vanilla-calendar-pro/index.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore-compat.js"></script>
@@ -134,6 +132,14 @@
                     <label for="invited-emails">Invite Users (Email Addresses, comma-separated):</label>
                     <input type="text" id="invited-emails" name="invited-emails">
                 </div>
+                <div>
+                    <label>Agenda Time:</label>
+                    <input type="time" id="agenda-time">
+                    <label>Agenda Item:</label>
+                    <input type="text" id="agenda-item" placeholder="e.g. Welcome Speech">
+                    <button type="button" onclick="addAgendaItem()">Add Agenda Item</button>
+                  </div>
+                  <ul id="agenda-list"></ul>                  
                 <button type="button" onclick="createNewEvent(
                     document.getElementById('event-name').value,
                     document.getElementById('event-date').value,
@@ -160,8 +166,7 @@
 
         <section id="rsvp-section" class="section">
             <h2>RSVP</h2>
-            <div id="rsvp-calendar"></div>
-            <div id="rsvp-detail-view" style="margin-top: 20px;"></div>
+            <p>List of events to RSVP to (requires backend data).</p>
         </section>
 
         <section id="view-events-section" class="section">
@@ -199,7 +204,6 @@
     </script>
 
     <script src="script.js" type="module"></script>
-
 
 <!--
     <script>
