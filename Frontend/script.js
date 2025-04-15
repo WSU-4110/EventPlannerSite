@@ -27,7 +27,7 @@ window.registerUser = async function(email, password, username) {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         console.log("Registration successful:", user);
-        // Optionally, store the username in Firestore
+        
         await setDoc(doc(db, 'users', user.uid), {
             username: username
         });
@@ -37,7 +37,7 @@ window.registerUser = async function(email, password, username) {
         const errorMessage = error.message;
         console.error("Registration error:", errorCode, errorMessage);
         alert("Registration failed: " + errorMessage);
-        // Handle errors (e.g., display error message to the user)
+        
     }
 };
 
@@ -132,7 +132,6 @@ window.loadEvents = async function() {
     }
 };
 
-// Insert into script.js after window.loadMyEvents definition
 
 window.editEvent = async function(eventId) {
     try {
@@ -205,8 +204,7 @@ window.editEvent = async function(eventId) {
       alert('Failed to upload images.');
     }
   };
-  
-  // Modify loadMyEvents to show image gallery upload + preview
+
   window.loadMyEvents = async function () {
     const myEventsList = document.getElementById('my-events-list');
     if (!myEventsList) return;
@@ -286,7 +284,6 @@ window.editEvent = async function(eventId) {
     }
   };
   
-  // New function to render events (used by filter and initial load)
   window.renderEventList = function (eventList, targetElement, user) {
     let html = '<ul>';
     eventList.forEach(event => {
@@ -322,7 +319,7 @@ window.editEvent = async function(eventId) {
   };
   
 
-// Updated RSVP logic with email + timestamp
+
 window.rsvpToEvent = async function(eventId) {
     const auth = getAuth();
     const user = auth.currentUser;
