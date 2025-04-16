@@ -307,37 +307,47 @@ window.editEvent = async function(eventId) {
       console.error("Error loading your events: ", error);
       myEventsList.innerHTML = '<p>Failed to load your events.</p>';
     }
-  };
-  
-  
-  
-  
-  
-    
+  }; 
 
   window.loadAllEventsList = async function () {
-    const calendarDiv = document.getElementById('calendar');
-    if (!calendarDiv) return;
+    const container = document.getElementById('calendar');
+    if (!container) return;
+    container.innerHTML = '<p>Loading events…</p>';
   
-    const searchInputId = 'event-search-input';
-    if (!document.getElementById(searchInputId)) {
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.id = searchInputId;
-      input.placeholder = 'Search events...';
-      input.style.marginBottom = '10px';
-      input.style.display = 'block';
-      input.oninput = () => window.filterEvents();
-      calendarDiv.before(input);
+    try {
+      const snapshot = await getDocs(collection(db, 'events'));
+      const user = auth.currentUser;
+      // map all docs to event objects
+      const allEvents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  
+      // filter by visibility flag
+      const visibleEvents = allEvents.filter(evt => {
+        if (evt.visibility === 'public') {
+          return true;
+        }
+        if (
+          evt.visibility === 'private' &&
+          user &&
+          Array.isArray(evt.invitedEmails) &&
+          evt.invitedEmails.includes(user.email)
+        ) {
+          return true;
+        }
+        return false;
+      });
+  
+      if (visibleEvents.length === 0) {
+        container.innerHTML = '<p>No events available.</p>';
+        return;
+      }
+  
+      window.renderEventList(visibleEvents, container, user);
+    } catch (error) {
+      console.error('Error loading events:', error);
+      container.innerHTML = '<p>Failed to load events.</p>';
     }
-  
-    const querySnapshot = await getDocs(collection(db, 'events'));
-    const auth = getAuth();
-    const user = auth.currentUser;
-  
-    window._allEvents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    window.renderEventList(window._allEvents, calendarDiv, user);
   };
+  
   
   
   
