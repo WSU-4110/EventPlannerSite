@@ -239,7 +239,17 @@ window.editEvent = async function(eventId) {
       alert('Failed to upload images.');
     }
   };
-  
+
+  window.toggleFeedback = function(eventId) {
+    const div = document.getElementById(`feedback-list-${eventId}`);
+    if (div.style.display === 'block') {
+      div.style.display = 'none';
+    } else {
+      div.style.display = 'block';
+      window.loadFeedbackForEvent(eventId);
+    }
+  };
+
   // Modify loadMyEvents to show image gallery upload + preview
   window.loadMyEvents = async function () {
     const myEventsList = document.getElementById('my-events-list');
