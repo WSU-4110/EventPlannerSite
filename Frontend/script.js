@@ -248,7 +248,6 @@ window.editEvent = async function(eventId) {
   
     try {
       const user = auth.currentUser;
-  
       if (user) {
         const eventsCollection = collection(db, 'events');
         const q = query(eventsCollection, where("organizerId", "==", user.uid));
@@ -273,6 +272,9 @@ window.editEvent = async function(eventId) {
               <input type="file" id="gallery-input-${eventId}" multiple>
               <button onclick="window.uploadGalleryImages('${eventId}')">Upload</button>
               ${eventData.gallery ? eventData.gallery.map(url => `<img src="${url}" style="max-width: 100px; margin: 5px;">`).join('') : ''}
+              <br><button onclick="document.getElementById('feedback-list-${eventId}').style.display='block'">View Feedback</button>
+              <div id="feedback-list-${eventId}" style="margin-top:10px; display:none;"></div>
+              <script>window.loadFeedbackForEvent('${eventId}');</script>
             </li>`;
           });
           html += '</ul>';
@@ -286,6 +288,7 @@ window.editEvent = async function(eventId) {
       myEventsList.innerHTML = '<p>Failed to load your events.</p>';
     }
   };
+  
   
   
     
