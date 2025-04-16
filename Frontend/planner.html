@@ -1,245 +1,239 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Planner</title>
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Planner</title>
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
 
-    <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore-compat.js"></script>
-    <style>
-        body {
-            font-family: sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            color: #333;
-        }
-
-        header {
-            background-color: #333;
-            color: white;
-            padding: 1em 0;
-            text-align: center;
-        }
-
-        nav {
-            background-color: #ddd;
-            padding: 0.5em 0;
-            text-align: center;
-        }
-
-        nav a {
-            text-decoration: none;
-            color: #333;
-            margin: 0 1em;
-            cursor: pointer;
-        }
-
-        .container {
-            max-width: 960px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .section {
-            margin-bottom: 20px;
-            padding: 15px;
-            border: 1px solid #eee;
-            background-color: #f9f9f9;
-        }
-
-        .section h2 {
-            border-bottom: 2px solid #ccc;
-            padding-bottom: 0.5em;
-            margin-top: 0;
-        }
-
-        footer {
-            text-align: center;
-            padding: 1em 0;
-            background-color: #333;
-            color: white;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
-
-        /* Styles for specific sections (initially hidden) */
-        #create-event-section,
-        #vendor-directory-section,
-        #rsvp-section,
-        #view-events-section {
-            display: none;
-        }
-    </style>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --primary: #0066cc;
+      --primary-light: #3388ff;
+      --bg: #f0f2f5;
+      --card-bg: #ffffff;
+      --text: #333333;
+      --muted: #666666;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+    }
+    nav a {
+      padding: 0.75rem 1.5rem;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    nav a:hover, nav a.active {
+      background: var(--primary-light);
+      color: #fff;
+    }
+    .container {
+      flex: 1;
+      max-width: 960px;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+    }
+    .section {
+      display: none;
+      margin-bottom: 2rem;
+      background: var(--card-bg);
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .section.active { display: block; }
+    .section h2 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 0.5rem;
+      color: var(--primary);
+    }
+    form .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    form .field {
+      flex: 1 1 200px;
+      display: flex;
+      flex-direction: column;
+    }
+    form .field label {
+      margin-bottom: 0.25rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    form .field input,
+    form .field textarea,
+    form .field select {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    .btn {
+      display: inline-block;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 4px;
+      background: var(--primary);
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-size: 1rem;
+      margin-top: 0.5rem;
+    }
+    .btn.outline {
+      background: transparent;
+      border: 2px solid var(--primary);
+      color: var(--primary);
+    }
+    .btn:hover { background: var(--primary-light); }
+    /* Agenda list */
+    #agenda-list {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 0.5rem;
+    }
+    #agenda-list li {
+      padding: 0.3rem 0;
+      border-bottom: 1px solid #eee;
+    }
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background: #fff;
+      border-top: 1px solid #ddd;
+      font-size: 0.9rem;
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <h1>Event Planner</h1>
+  </header>
+  <nav>
+    <a id="nav-create" onclick="showSection('create-event-section')">Create Event</a>
+    <a id="nav-vendor" onclick="showSection('vendor-directory-section')">Vendors</a>
+    <a id="nav-rsvp" onclick="showSection('rsvp-section')">RSVP</a>
+    <a id="nav-view" onclick="showSection('view-events-section')">View Events</a>
+    <a id="nav-my" onclick="showSection('my-events-section')">My Events</a>
+    <a href="./login.html">Logout</a> </nav>
+  </nav>
 
-    <header>
-        <h1>Event Planner</h1>
-    </header>
+  <div class="container">
+    <section id="create-event-section" class="section">
+      <h2>Create Event</h2>
+      <form>
+        <div class="row">
+          <div class="field"><label>Name</label><input type="text" id="event-name" required></div>
+          <div class="field"><label>Date</label><input type="date" id="event-date" required></div>
+          <div class="field"><label>Time</label><input type="time" id="event-time" required></div>
+          <div class="field"><label>Location</label><input type="text" id="event-location"></div>
+          <div class="field" style="flex:1 1 100%;"><label>Description</label><textarea id="event-description" rows="3"></textarea></div>
+        </div>
+        <div class="row" style="align-items:flex-end; margin-top:1rem;">
+          <div class="field"><label>Visibility</label><select id="event-visibility" onchange="toggleInviteField(this.value)"><option value="public">Public</option><option value="private">Private</option></select></div>
+          <div class="field" id="invite-users-field" style="display:none;"><label>Invited Emails</label><input type="text" id="invited-emails" placeholder="email1, email2"></div>
+          <div class="field"><label>Resource</label><input type="file" id="event-resource" accept=".pdf,.jpg,.png"></div>
+        </div>
+        <fieldset style="margin-top:1rem; border:1px solid #ccc; padding:0.75rem; border-radius:4px;">
+          <legend>Agenda</legend>
+          <div class="row">
+            <div class="field"><label>Time</label><input type="time" id="agenda-time"></div>
+            <div class="field"><label>Item</label><input type="text" id="agenda-item" placeholder="e.g. Opening Remarks"></div>
+            <div class="field" style="flex:0 0 auto;"><button type="button" class="btn outline" onclick="addAgendaItem()">Add</button></div>
+          </div>
+          <ul id="agenda-list"></ul>
+        </fieldset>
+        <button type="button" class="btn" onclick="createNewEvent(
+            document.getElementById('event-name').value,
+            document.getElementById('event-date').value,
+            document.getElementById('event-time').value,
+            document.getElementById('event-location').value,
+            document.getElementById('event-description').value,
+            document.getElementById('event-visibility').value,
+            document.getElementById('invited-emails').value
+          )">Create Event</button>
+      </form>
+    </section>
 
-    <nav>
-        <a onclick="showSection('create-event-section')">Create Event</a>
-        <a onclick="showSection('vendor-directory-section')">Vendor Directory</a>
-        <a onclick="showSection('rsvp-section')">RSVP</a>
-        <a onclick="showSection('view-events-section')">View Events</a>
-        <a href="#" onclick="window.showSection('my-events-section')">My Events</a>
-        <a href="./login.html">Logout</a> </nav>
+    <section id="vendor-directory-section" class="section">
+      <h2>Vendor Directory</h2>
+      <div class="row">
+        <div class="field"><label>Name: </label><input type="text" id="vendor-name" placeholder="Vendor Name"></div>
+        <div class="field"><label>Type: </label><input type="text" id="vendor-type" placeholder="e.g., Catering"></div>
+        <div class="field"><label>Contact: </label><input type="text" id="vendor-contact" placeholder="Email or Phone"></div>
+        <div class="field"><label>Website: </label><input type="url" id="vendor-website" placeholder="Optional"></div>
+      </div>
+      <button class="btn" onclick="registerVendor()">Register Vendor</button>
+    </section>
 
-    <div class="container">
+    <section id="rsvp-section" class="section">
+      <h2>RSVP Calendar</h2>
+      <div id="rsvp-calendar"></div>
+      <div id="rsvp-detail-view" style="margin-top:1rem;"></div>
+    </section>
 
-        <section id="create-event-section" class="section">
-            <h2>Create Event</h2>
-            <form>
-                <div>
-                    <label for="event-name">Event Name:</label>
-                    <input type="text" id="event-name" name="event-name">
-                </div>
-                <div>
-                    <label for="event-date">Date:</label>
-                    <input type="date" id="event-date" name="event-date">
-                </div>
-                <div>
-                    <label for="event-time">Time:</label>
-                    <input type="time" id="event-time" name="event-time">
-                </div>
-                <div>
-                    <label for="event-location">Location:</label>
-                    <input type="text" id="event-location" name="event-location">
-                </div>
-                <div>
-                    <label for="event-description">Description:</label>
-                    <textarea id="event-description" name="event-description"></textarea>
-                </div>
-                <div>
-                    <label>Visibility:</label>
-                    <input type="radio" id="public-event" name="event-visibility" value="public" onchange="toggleInviteField(this.value)" checked>
-                    <label for="public-event">Public</label>
-                    <input type="radio" id="private-event" name="event-visibility" value="private" onchange="toggleInviteField(this.value)">
-                    <label for="private-event">Private</label>
-                </div>
-                <div>
-                    <label for="event-resource">Upload Resource (PDF/image):</label>
-                    <input type="file" id="event-resource" name="event-resource" accept=".pdf,.jpg,.png,.jpeg">
-                  </div>                  
-                <div id="invite-users-field" style="display: none;">
-                    <label for="invited-emails">Invite Users (Email Addresses, comma-separated):</label>
-                    <input type="text" id="invited-emails" name="invited-emails">
-                </div>
-                <div>
-                    <label>Agenda Time:</label>
-                    <input type="time" id="agenda-time">
-                    <label>Agenda Item:</label>
-                    <input type="text" id="agenda-item" placeholder="e.g. Welcome Speech">
-                    <button type="button" onclick="addAgendaItem()">Add Agenda Item</button>
-                  </div>
-                  <ul id="agenda-list"></ul>                  
-                <button type="button" onclick="createNewEvent(
-                    document.getElementById('event-name').value,
-                    document.getElementById('event-date').value,
-                    document.getElementById('event-time').value,
-                    document.getElementById('event-location').value,
-                    document.getElementById('event-description').value,
-                    document.querySelector('input[name=\'event-visibility\']:checked').value,
-                    document.getElementById('invited-emails').value
-                )">Create Event</button>
-            </form>
-        </section>
+    <section id="view-events-section" class="section">
+      <h2>All Events</h2>
+      <input type="text" id="event-search-input" placeholder="Search events..." oninput="filterEvents()" style="width:100%; padding:0.5rem; margin-bottom:1rem;">
+      <div id="calendar"></div>
+    </section>
 
-        <section id="vendor-directory-section" class="section">
-            <h2>Vendor Directory</h2>
-            <h3>Register as Vendor</h3>
-            <input type="text" id="vendor-name" placeholder="Vendor Name"><br>
-            <input type="text" id="vendor-type" placeholder="Type (e.g. catering, music)"><br>
-            <input type="text" id="vendor-contact" placeholder="Contact Email/Phone"><br>
-            <input type="url" id="vendor-website" placeholder="Website (optional)"><br>
-            <button onclick="window.registerVendor()">Register</button>
-        </section>
+    <section id="my-events-section" class="section">
+      <h2>My Events</h2>
+      <div id="my-events-list"></div>
+    </section>
+  </div>
 
-        <section id="rsvp-section" class="section">
-            <h2>RSVP</h2>
-            <div id="rsvp-calendar"></div>
-            <div id="rsvp-detail-view" style="margin-top: 20px;"></div>
-        </section>
+  <footer>
+    &copy; 2025 Event Planner
+  </footer>
 
-        <section id="view-events-section" class="section">
-            <h2>View Events</h2>
-            <input
-                type="text"
-                id="event-search-input"
-                placeholder="Search events..."
-                oninput="window.filterEvents()"
-                style="margin-bottom: 10px; padding: 8px; width: 100%;">
-            <div id="calendar">
-            </div>
-        </section>
-        <section id="my-events-section" class="section" style="display: none;">
-            <h2>My Events</h2>
-            <div id="my-events-list">
-                </div>
-        </section>
-
-    </div>
-
-    <footer>
-        <p>&copy; 2025 Event Planner</p>
-    </footer>
-
-    <script>
-        function toggleInviteField(visibility) {
-            const inviteField = document.getElementById('invite-users-field');
-            if (visibility === 'private') {
-                inviteField.style.display = 'block';
-            } else {
-                inviteField.style.display = 'none';
-            }
-        }
-    </script>
-
-    <script src="script.js" type="module"></script>
-
-<!--
-    <script>
-        function showSection(sectionId) {
-            // Hide all sections
-            const sections = document.querySelectorAll('.container > .section');
-            sections.forEach(section => {
-                section.style.display = 'none';
-            });
-
-            // Show the selected section
-            const sectionToShow = document.getElementById(sectionId);
-            if (sectionToShow) {
-                sectionToShow.style.display = 'block';
-            }
-        }
-
-        // Initially show the "View Events" section or any default section
-        document.addEventListener('DOMContentLoaded', function() {
-            showSection('view-events-section');
-        });
-    </script>
-
-
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        //import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        //import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
-        // TODO: Add SDKs for Firebase products that you want to use
-        // https://firebase.google.com/docs/web/setup#available-libraries
-    
-        // Your web app's Firebase configuration
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-    
-        // Initialize Firebase
-    </script>
--->
+  <script>
+    function toggleInviteField(val) {
+      document.getElementById('invite-users-field').style.display = val === 'private' ? 'block' : 'none';
+    }
+    function setActiveNav(id) {
+      document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+    function showSection(section) {
+      document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+      document.getElementById(section).classList.add('active');
+      setActiveNav('nav-' + section.split('-')[0]);
+    }
+    document.addEventListener('DOMContentLoaded', ()=>showSection('view-events-section'));
+  </script>
+  <script src="script.js" type="module"></script>
 </body>
 </html>
