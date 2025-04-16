@@ -5,6 +5,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstati
 import { getFirestore, collection, doc, setDoc, addDoc, getDocs, getDoc, query, where } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
 
+
 //firebase config
 const firebaseConfig = {
     apiKey: "AIzaSyB78Zxb1syQWWtf-bPDzGdhClkmBZsKkWM",
@@ -169,45 +170,31 @@ window.loadEvents = async function() {
 // Insert into script.js after window.loadMyEvents definition
 
 window.editEvent = async function(eventId) {
+  const newTitle = prompt("Enter new event title:");
+  if (newTitle) {
     try {
-      const docRef = doc(db, 'events', eventId);
-      const docSnap = await getDoc(docRef);
-  
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        const newName = prompt("Edit Event Name:", data.name);
-        const newDate = prompt("Edit Date:", data.date);
-        const newTime = prompt("Edit Time:", data.time);
-        const newLocation = prompt("Edit Location:", data.location);
-        const newDescription = prompt("Edit Description:", data.description);
-  
-        if (newName && newDate && newTime) {
-          await updateDoc(docRef, {
-            name: newName,
-            date: newDate,
-            time: newTime,
-            location: newLocation,
-            description: newDescription
-          });
-          alert("Event updated successfully.");
-          window.loadMyEvents();
-        }
-      }
-    } catch (error) {
-      console.error("Error editing event:", error);
-    }
-  };
-  
-  window.deleteEvent = async function(eventId) {
-    const confirmDelete = confirm("Are you sure you want to delete this event?");
-    if (!confirmDelete) return;
-  
-    try {
-      await deleteDoc(doc(db, 'events', eventId));
-      alert("Event deleted successfully.");
+      const eventRef = doc(db, 'events', eventId);
+      await updateDoc(eventRef, { name: newTitle });
+      alert("Event updated successfully.");
       window.loadMyEvents();
     } catch (error) {
-      console.error("Error deleting event:", error);
+      console.error("Error updating event:", error);
+      alert("Failed to update event.");
+    }
+  }
+};
+
+  
+  window.deleteEvent = async function(eventId) {
+    if (confirm("Are you sure you want to delete this event?")) {
+      try {
+        await deleteDoc(doc(db, 'events', eventId));
+        alert("Event deleted successfully.");
+        window.loadMyEvents();
+      } catch (error) {
+        console.error("Error deleting event:", error);
+        alert("Failed to delete event.");
+      }
     }
   };
   
@@ -321,6 +308,7 @@ window.editEvent = async function(eventId) {
       myEventsList.innerHTML = '<p>Failed to load your events.</p>';
     }
   };
+  
   
   
   
