@@ -250,6 +250,30 @@ window.editEvent = async function(eventId) {
     }
   };
 
+  window.loadFeedbackForEvent = async function(eventId) {
+    const feedbackDiv = document.getElementById(`feedback-list-${eventId}`);
+    feedbackDiv.innerHTML = 'Loading feedback...';
+  
+    try {
+      const snapshot = await getDocs(collection(db, 'events', eventId, 'feedback'));
+      if (snapshot.empty) {
+        feedbackDiv.innerHTML = '<p>No feedback yet.</p>';
+      } else {
+        let html = '<ul>';
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          html += `<li>${data.comment || 'No comment'} - Rating: ${data.rating || 'N/A'}</li>`;
+        });
+        html += '</ul>';
+        feedbackDiv.innerHTML = html;
+      }
+    } catch (error) {
+      console.error("Error loading feedback:", error);
+      feedbackDiv.innerHTML = '<p>Error loading feedback.</p>';
+    }
+  };
+  
+
   // Modify loadMyEvents to show image gallery upload + preview
   window.loadMyEvents = async function () {
     const myEventsList = document.getElementById('my-events-list');
