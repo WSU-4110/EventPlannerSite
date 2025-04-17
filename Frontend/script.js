@@ -330,44 +330,47 @@ window.editEvent = async function(eventId) {
     }
   }; 
 
-  window.loadAllEventsList = async function () {
-    const container = document.getElementById('calendar');
-    if (!container) return;
-    container.innerHTML = '<p>Loading events…</p>';
-  
-    try {
-      const snapshot = await getDocs(collection(db, 'events'));
-      const user = auth.currentUser;
-      // map all docs to event objects
-      const allEvents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  
-      // filter by visibility flag
-      const visibleEvents = allEvents.filter(evt => {
-        if (evt.visibility === 'public') {
-          return true;
-        }
-        if (
-          evt.visibility === 'private' &&
-          user &&
-          Array.isArray(evt.invitedEmails) &&
-          evt.invitedEmails.includes(user.email)
-        ) {
-          return true;
-        }
-        return false;
-      });
-  
-      if (visibleEvents.length === 0) {
-        container.innerHTML = '<p>No events available.</p>';
-        return;
+window.loadAllEventsList = async function () {
+  const container = document.getElementById('calendar');
+  if (!container) return;
+  container.innerHTML = '<p>Loading events…</p>';
+
+  try {
+    const snapshot = await getDocs(collection(db, 'events'));
+    const user = auth.currentUser;
+
+    // build array of all events
+    const allEvents = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // keep only public or private‑but‑invited
+    const visibleEvents = allEvents.filter(evt => {
+      if (evt.visibility === 'public') return true;
+      if (
+        evt.visibility === 'private' &&
+        user &&
+        Array.isArray(evt.invitedEmails) &&
+        evt.invitedEmails.includes(user.email)
+      ) {
+        return true;
       }
-  
-      window.renderEventList(visibleEvents, container, user);
-    } catch (error) {
-      console.error('Error loading events:', error);
-      container.innerHTML = '<p>Failed to load events.</p>';
+      return false;
+    });
+
+    // store for searching
+    window._allEvents = visibleEvents;
+
+    if (visibleEvents.length === 0) {
+      container.innerHTML = '<p>No events available.</p>';
+      return;
     }
-  };
+
+    window.renderEventList(visibleEvents, container, user);
+  } catch (err) {
+    console.error('Error loading events:', err);
+    container.innerHTML = '<p>Failed to load events.</p>';
+  }
+};
+  
   
   
   
@@ -409,17 +412,17 @@ window.renderEventList = function (eventList, targetElement, user) {
   
   // Search filter function
 window.filterEvents = function () {
-  const input = document.getElementById('event-search-input').value.toLowerCase();
-  const filtered = window._allEvents.filter(e =>
-    e.name.toLowerCase().includes(input) ||
-    e.location.toLowerCase().includes(input) ||
-    e.description.toLowerCase().includes(input)
+  const q = document.getElementById('event-search-input').value.toLowerCase();
+  const filtered = (window._allEvents || []).filter(evt =>
+    evt.name.toLowerCase().includes(q) ||
+    (evt.location || '').toLowerCase().includes(q) ||
+    (evt.description || '').toLowerCase().includes(q)
   );
-  const auth = getAuth();
   const user = auth.currentUser;
-  const calendarDiv = document.getElementById('calendar');
-  window.renderEventList(filtered, calendarDiv, user);
+  const container = document.getElementById('calendar');
+  window.renderEventList(filtered, container, user);
 };
+  
 
 
 // Updated RSVP logic with email + timestamp
