@@ -56,6 +56,26 @@ window.loginUser = async function(email, password) {
      }
 };
 
+// Display username on login
+auth.onAuthStateChanged(async user => {
+  if (user) {
+    try {
+      // fetch the `username` field from your 'users' collection
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      const username = userSnap.exists() 
+        ? userSnap.data().username 
+        : user.email;
+      // write it into the planner header
+      const greetingEl = document.getElementById('user-greeting');
+      if (greetingEl) greetingEl.textContent = `Hello, ${username}`;
+    } catch (e) {
+      console.error('Error fetching username:', e);
+    }
+  }
+});
+
+
 window.agendaItems = [];
 
 window.addAgendaItem = function () {
@@ -166,6 +186,7 @@ window.loadEvents = async function() {
         console.error("Error loading events for calendar: ", error);
     }
 };
+
 
 // Insert into script.js after window.loadMyEvents definition
 
