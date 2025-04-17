@@ -146,6 +146,7 @@
     <a id="nav-rsvp" onclick="showSection('rsvp-section')">RSVP</a>
     <a id="nav-view" onclick="showSection('view-events-section')">View Events</a>
     <a id="nav-my" onclick="showSection('my-events-section')">My Events</a>
+    <a onclick="showSection('chatroom-section')">Chatroom</a>
     <a href="./login.html">Logout</a> </nav>
   </nav>
 
@@ -213,6 +214,13 @@
       <h2>My Events</h2>
       <div id="my-events-list"></div>
     </section>
+    <section id="chatroom-section" class="section" style="display: none;">
+      <h2>Community Chatroom</h2>
+      <div id="chat-messages" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;"></div>
+      <input type="text" id="chat-input" placeholder="Type your message..." style="width: 80%;">
+      <button onclick="window.sendMessage()">Send</button>
+    </section>
+    
   </div>
 
   <footer>
