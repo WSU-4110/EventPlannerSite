@@ -21,13 +21,8 @@
     }
     * { box-sizing: border-box; }
     body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
+      background: url('./image.jpg') no-repeat center center fixed;
+      background-size: cover;
     }
     header {
       background: var(--primary);
@@ -147,8 +142,7 @@
     <a id="nav-rsvp" onclick="showSection('rsvp-section')">RSVP</a>
     <a id="nav-view" onclick="showSection('view-events-section')">View Events</a>
     <a id="nav-my" onclick="showSection('my-events-section')">My Events</a>
-    <a onclick="showSection('chatroom-section')">Chatroom</a>
-    <a href="./login.html">Logout</a> </nav>
+    <a href="./index.html">Logout</a> </nav>
   </nav>
 
   <div class="container">

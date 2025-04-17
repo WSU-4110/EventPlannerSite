@@ -381,6 +381,8 @@ window.renderEventList = function (eventList, targetElement, user) {
   eventList.forEach(event => {
     const mailSubject = encodeURIComponent(`RSVP Confirmation for ${event.name}`);
     const mailBody = encodeURIComponent(`Thanks for RSVP'ing to ${event.name} on ${event.date} at ${event.time}.`);
+    const shareUrl = encodeURIComponent(window.location.href);
+    const twitterText = encodeURIComponent(event.name);
 
     html += `<li>
       <strong>${event.name}</strong><br>
@@ -388,10 +390,13 @@ window.renderEventList = function (eventList, targetElement, user) {
       Location: ${event.location || 'Not specified'}<br>
       Description: ${event.description || 'No description'}<br>
       ${user ? `<button onclick="window.rsvpToEvent('${event.id}')">RSVP</button>` : 'Log in to RSVP'}<br>
-      <a href="mailto:${user?.email}?subject=${mailSubject}&body=${mailBody}">Send RSVP Email</a><br>
-      <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(event.name)}" target="_blank">Share on X</a> |
-      <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}" target="_blank">Facebook</a> |
-      <a href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}" target="_blank">LinkedIn</a><br>
+      <button onclick="window.open('mailto:${user?.email}?subject=${mailSubject}&body=${mailBody}', '_blank')">Send RSVP Email</button><br>
+      <button onclick="window.open('https://twitter.com/intent/tweet?text=${twitterText}', '_blank')">Share on X</button>
+      <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${shareUrl}', '_blank')">Share on Facebook</button>
+      <button onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}', '_blank')">Share on LinkedIn</button>
+      <button class="btn outline" onclick="window.open('https://your-chat-url.example.com', '_blank')">
+      Join Group Chat
+      </button>
       <textarea id="feedback-comment-${event.id}" placeholder="Leave feedback" rows="2" style="width:100%;"></textarea>
       <select id="feedback-rating-${event.id}">
         <option value="">Rating</option>
@@ -409,6 +414,7 @@ window.renderEventList = function (eventList, targetElement, user) {
   html += '</ul>';
   targetElement.innerHTML = html;
 };
+  
   
   // Search filter function
 window.filterEvents = function () {
@@ -533,7 +539,7 @@ window.loadRsvpEvents = async function () {
         ${user ? `<button onclick="window.rsvpToEvent('${event.id}')">RSVP</button>` : 'Log in to RSVP'}<br>
         <a href="https://twitter.com/intent/tweet?text=${shareText}%20${shareUrl}" target="_blank">Share on X</a> |
         <a href="https://www.facebook.com/sharer/sharer.php?u=${shareUrl}" target="_blank">Facebook</a> |
-        <a href="https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}" target="_blank">LinkedIn</a>
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}" target="_blank">Join Group Chat</a>
       </li>`;
     });
     html += '</ul>';
@@ -602,9 +608,6 @@ window.submitFeedback = async function(eventId) {
           Location: ${event.location || 'Not specified'}<br>
           Description: ${event.description || 'No description'}<br>
           ${user ? `<button onclick="window.rsvpToEvent('${event.id}')">RSVP</button>` : 'Log in to RSVP'}<br>
-          <a href="https://twitter.com/intent/tweet?text=${shareText}%20${shareUrl}" target="_blank">Share on X</a> |
-          <a href="https://www.facebook.com/sharer/sharer.php?u=${shareUrl}" target="_blank">Facebook</a> |
-          <a href="https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}" target="_blank">LinkedIn</a><br>
           <div style="margin-top: 10px;">
               <textarea id="feedback-comment-${event.id}" placeholder="Leave feedback" rows="2" style="width:100%;"></textarea>
               <select id="feedback-rating-${event.id}">
@@ -752,41 +755,53 @@ window.loadRsvpCalendar = async function () {
     }
   }
 
-  const calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    events: rsvpEvents,
-    eventClick: function (info) {
-      const e = info.event;
-      const detailDiv = document.getElementById('rsvp-detail-view');
-      const html = `
-        <h3>${e.title}</h3>
-        <p><strong>Time:</strong> ${e.start}</p>
-        <p><strong>Location:</strong> ${e.extendedProps.location}</p>
-        <p>${e.extendedProps.description}</p>
-        <a href="mailto:${auth.currentUser.email}?subject=RSVP Confirmation for ${e.title}&body=Thanks for RSVP'ing to ${e.title}!">Send RSVP Email</a><br>
-        <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(e.title)}" target="_blank">Share on X</a> |
-        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}" target="_blank">Facebook</a> |
-        <a href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}" target="_blank">LinkedIn</a>
-        <br><br>
-        <textarea id="feedback-comment-${e.id}" placeholder="Leave feedback" rows="2" style="width:100%;"></textarea>
-        <select id="feedback-rating-${e.id}">
-          <option value="">Rating</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-        </select>
-        <button onclick="window.submitFeedback('${e.id}')">Submit Feedback</button>
-        <div id="feedback-list-${e.id}" style="margin-top:10px;"></div>
-        <script>window.loadFeedbackForEvent('${e.id}');</script>
-      `;
-      detailDiv.innerHTML = html;
-    }
-  });
+const calendar = new FullCalendar.Calendar(calendarEl, {
+  initialView: 'dayGridMonth',
+  events: rsvpEvents,
+  eventClick: function (info) {
+    const e = info.event;
+    const detailDiv = document.getElementById('rsvp-detail-view');
+    const html = `
+      <h3>${e.title}</h3>
+      <p><strong>Time:</strong> ${e.start}</p>
+      <p><strong>Location:</strong> ${e.extendedProps.location}</p>
+      <p>${e.extendedProps.description}</p>
+      <a href="mailto:${auth.currentUser.email}?subject=RSVP Confirmation for ${e.title}&body=Thanks for RSVP'ing to ${e.title}!">Send RSVP Email</a><br>
+      <p>
+      <button onclick="window.open('https://twitter.com/intent/tweet?text', '_blank')">Twitter</button>
+      <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?', '_blank')">Facebook</button>
+      <button onclick="window.open('https://www.linkedin.com/sharing/share-offsite/', '_blank')">LinkedIn</button>
+      <br><br>
+
+      <button
+      type="button"
+      class="btn outline"
+      onclick="window.open('https://test-deployment-62gt.onrender.com/', '_blank')"
+      >
+        Join Group Chat
+      </button>
+      <br><br>
+
+      <textarea id="feedback-comment-${e.id}" placeholder="Leave feedback" rows="2" style="width:100%;"></textarea>
+      <select id="feedback-rating-${e.id}">
+        <option value="">Rating</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+      <button onclick="window.submitFeedback('${e.id}')">Submit Feedback</button>
+      
+      <div id="feedback-list-${e.id}" style="margin-top:10px;"></div>
+      <script>window.loadFeedbackForEvent('${e.id}');</script>
+    `;
+    detailDiv.innerHTML = html;
+  }
+});
 
   calendar.render();
-};
+  };
 
 // Call this function when the "View Events" section is shown
 window.showSection = function(sectionId) {
